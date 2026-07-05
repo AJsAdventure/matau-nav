@@ -1,0 +1,7 @@
+[Unit]
+Description=Matau GPS watchdog — revive stalled PL2303 USB GPS
+After=signalk.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/bin/matau_gps_watchdog.py

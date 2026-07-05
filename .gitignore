@@ -1,0 +1,31 @@
+# ---- Never publish: personal / licensed / sensitive ----
+# 2.6 GB licensed hydrographic GeoTIFFs + build cache
+Chart/
+# copyrighted Raymarine instrument manuals
+manuals/
+*.pdf
+# Pi snapshots: WiFi credentials, SignalK config, session files
+pi-backup/
+# personal track history
+garmin-share-*.gpx
+_icloud-conflict-backup/
+# reverse-engineered PredictWind internals + account context (kept private)
+predictwind-api-discovery.md
+predictwind-api-reference.md
+# drafts
+blogpost*.md
+
+# ---- Build / tooling noise ----
+__pycache__/
+*.pyc
+.DS_Store
+xcuserdata/
+*.xcuserstate
+build/
+DerivedData/
+*.bak
+*.bak.*
+
+# ---- iCloud sync conflict artifacts ----
+* 2.*
+* 2/

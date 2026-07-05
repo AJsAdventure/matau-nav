@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:busse-yachtshop.de)",
+      "Bash(/opt/homebrew/bin/python3 build_contours.py paros)",
+      "Bash(ping -c 1 -t 2 raspberrypi.local)",
+      "Bash(ping -c 1 -t 2 signalk.local)",
+      "Bash(ping -c 1 -t 2 matau.local)"
+    ]
+  }
+}

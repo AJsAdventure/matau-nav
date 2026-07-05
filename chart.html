@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Matau — Marine Chart</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet-gpx@1.7.0/gpx.js"></script>
+
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #map { height: 100vh; width: 100vw; background: #cfe2f3; }
+    .leaflet-container { font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .legend {
+      background: rgba(255,255,255,.92);
+      padding: 8px 10px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      line-height: 1.6;
+    }
+    .legend .swatch {
+      display: inline-block; width: 14px; height: 4px; vertical-align: middle;
+      margin-right: 6px; border-radius: 2px;
+    }
+    .legend h4 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; color: #555; letter-spacing: .04em; }
+    .info { padding: 6px 10px; background: rgba(255,255,255,.9); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    // ---------------------------------------------------------------------
+    // Base layers
+    // ---------------------------------------------------------------------
+    const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+
+    const positron = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      {
+        maxZoom: 20,
+        subdomains: 'abcd',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      }
+    );
+
+    // ---------------------------------------------------------------------
+    // Overlays
+    // ---------------------------------------------------------------------
+
+    // EMODnet Bathymetry — public XYZ tiles (Web Mercator, EU waters)
+    const emodnetBathy = L.tileLayer(
+      'https://tiles.emodnet-bathymetry.eu/2020/baselayer/web_mercator/{z}/{x}/{y}.png',
+      {
+        maxZoom: 12,
+        opacity: 0.75,
+        attribution: 'Bathymetry &copy; <a href="https://emodnet.ec.europa.eu/en/bathymetry">EMODnet Bathymetry Consortium</a>'
+      }
+    );
+
+    // OpenSeaMap seamark overlay (buoys, lights, harbours, etc.)
+    const seamarks = L.tileLayer(
+      'https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',
+      {
+        maxZoom: 18,
+        attribution: 'Seamarks &copy; <a href="https://www.openseamap.org/">OpenSeaMap</a> contributors'
+      }
+    );
+
+    // ---------------------------------------------------------------------
+    // Map
+    // ---------------------------------------------------------------------
+    const map = L.map('map', {
+      center: [35.97, 14.36],   // Comino-ish, gets overwritten by GPX bounds
+      zoom: 12,
+      layers: [positron, emodnetBathy, seamarks]
+    });
+
+    L.control.scale({ imperial: false }).addTo(map);
+
+    // ---------------------------------------------------------------------
+    // GPX tracks
+    // ---------------------------------------------------------------------
+    const trackStyles = [
+      { url: 'garmin-share-64b2a6c6.gpx', color: '#d62728', label: 'San Niklaw — Comino — Marfa Pt' },
+      { url: 'garmin-share-8017aa0a.gpx', color: '#1f77b4', label: 'Five-track archive (Comino, Roland, Valletta…)' }
+    ];
+
+    const trackGroups = {};
+    let allBounds = null;
+
+    trackStyles.forEach(t => {
+      const layer = new L.GPX(t.url, {
+        async: true,
+        marker_options: {
+          startIconUrl: null,
+          endIconUrl: null,
+          shadowUrl: null
+        },
+        polyline_options: { color: t.color, weight: 3, opacity: 0.9 }
+      })
+      .on('loaded', e => {
+        const b = e.target.getBounds();
+        allBounds = allBounds ? allBounds.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
+        map.fitBounds(allBounds, { padding: [40, 40] });
+      })
+      .on('error', e => console.warn('GPX load error:', t.url, e));
+
+      trackGroups[t.label] = layer;
+      layer.addTo(map);
+    });
+
+    // ---------------------------------------------------------------------
+    // Layer control
+    // ---------------------------------------------------------------------
+    L.control.layers(
+      {
+        'Carto Positron (light)': positron,
+        'OpenStreetMap': osm
+      },
+      {
+        'EMODnet Bathymetry': emodnetBathy,
+        'OpenSeaMap seamarks': seamarks,
+        ...trackGroups
+      },
+      { collapsed: false }
+    ).addTo(map);
+
+    // ---------------------------------------------------------------------
+    // Legend
+    // ---------------------------------------------------------------------
+    const legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = () => {
+      const div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = `
+        <h4>Tracks</h4>
+        ${trackStyles.map(t => `
+          <div><span class="swatch" style="background:${t.color}"></span>${t.label}</div>
+        `).join('')}
+      `;
+      return div;
+    };
+    legend.addTo(map);
+  </script>
+</body>
+</html>

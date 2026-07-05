@@ -1,0 +1,140 @@
+name: MatauNav
+options:
+  bundleIdPrefix: com.matau
+  deploymentTarget:
+    iOS: "18.0"
+    macOS: "14.0"
+  xcodeVersion: "16"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: 1
+    DEVELOPMENT_TEAM: 9WDB3ZU52G
+
+targets:
+  MatauNav:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: MatauNav
+        excludes:
+          - "Info-macOS.plist"
+    info:
+      path: MatauNav/Info.plist
+      properties:
+        CFBundleDisplayName: "Matau Nav"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+        UIRequiresFullScreen: true
+        UIBackgroundModes:
+          - location
+          - audio
+        NSLocalNetworkUsageDescription: "Matau Nav needs local network access to connect to the SignalK server on your boat."
+        NSLocationWhenInUseUsageDescription: "Matau Nav uses your location to show your vessel on the anchor watch map and calculate distance from anchor."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Matau Nav needs Always location access to send an anchor drag alarm even when the app is closed."
+        NSContactsUsageDescription: "Matau Nav uses Contacts so you can pick a friend's name and phone number when tagging an AIS vessel as a friend."
+        NSBonjourServices:
+          - _http._tcp
+        LSApplicationQueriesSchemes:
+          - navionics
+          - boating
+          - naviapp
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+          NSExceptionDomains:
+            matau.local:
+              NSExceptionAllowsInsecureHTTPLoads: true
+              NSIncludesSubdomains: false
+            100.100.220.67:
+              NSExceptionAllowsInsecureHTTPLoads: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.matau.nav
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: MatauNav/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+    dependencies:
+      - target: MatauNavWatch
+        embed: true
+        codeSign: true
+
+  MatauNavWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "11.0"
+    sources:
+      - path: MatauNavWatch
+    info:
+      path: MatauNavWatch/Info.plist
+      properties:
+        CFBundleDisplayName: "Matau Nav"
+        LSRequiresIPhoneOS: false
+        WKApplication: true
+        WKWatchOnly: false
+        WKCompanionAppBundleIdentifier: com.matau.nav
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.matau.nav.watchkitapp
+        PRODUCT_NAME: "Matau Nav"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: MatauNavWatch/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "4"
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+        SWIFT_EMIT_LOC_STRINGS: YES
+
+  MatauNavMac:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: MatauNav
+        excludes:
+          - "PhoneWatchBridge.swift"   # WatchConnectivity — iOS/watchOS only
+          - "Info.plist"               # iOS plist; Mac uses Info-macOS.plist
+    info:
+      path: MatauNav/Info-macOS.plist
+      properties:
+        CFBundleDisplayName: "Matau Nav"
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: "Matau Nav"
+        # All boat services are on the LAN / Tailscale over cleartext http/ws.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+          NSExceptionDomains:
+            matau.local:
+              NSExceptionAllowsInsecureHTTPLoads: true
+              NSIncludesSubdomains: false
+            100.100.220.67:
+              NSExceptionAllowsInsecureHTTPLoads: true
+        NSLocationUsageDescription: "Matau Nav can use your Mac's location as a backup position source for the anchor watch when the boat GPS feed is unavailable."
+        NSContactsUsageDescription: "Matau Nav uses Contacts so you can attach a friend's name and number to an AIS vessel."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.matau.nav.mac
+        PRODUCT_NAME: "Matau Nav"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: MatauNav/Info-macOS.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+        # Unsandboxed personal build: full network / keychain / file access,
+        # no entitlements file required. Hardened runtime stays off for local dev.
+        ENABLE_HARDENED_RUNTIME: NO
+        COMBINE_HIDPI_IMAGES: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+    # NO watch dependency — a macOS app cannot embed a watchOS app.

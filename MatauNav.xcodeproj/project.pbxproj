@@ -1,0 +1,1004 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01247DFBA525FE5C83D7D148 /* AnchorWatchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25422954786374F71977A5F /* AnchorWatchService.swift */; };
+		01C368105A02D24EE7FC167F /* SignalKCredentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20DF2F205A92C4217A05FC8 /* SignalKCredentials.swift */; };
+		028C0EE7B444DAC57DDAFAB3 /* MatauNavApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87687852BA221EE2A77036EE /* MatauNavApp.swift */; };
+		0394EBF8DB60CCE8C1EBCA1B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E56E25F6117F2FABFD749F4 /* Theme.swift */; };
+		039A88D451A7B4CB301B88AB /* paros.geojson in Resources */ = {isa = PBXBuildFile; fileRef = FFD0C020A5E1B44C8E9FC367 /* paros.geojson */; };
+		082EB9A4C28384120CBD220D /* InstrumentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A600307ACFD63D9A4DF2BCE /* InstrumentsView.swift */; };
+		0BBF4479D315097BBFE9A620 /* GarminWebSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415B68AD62B4E1E62244FF48 /* GarminWebSheet.swift */; };
+		0F306796188638226D305088 /* AnchorWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A3663C39C598474B790D9E /* AnchorWizard.swift */; };
+		0FF956B63F9ECBC4EC38808F /* ComingSoonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE637732AFEB2088030D0D9D /* ComingSoonView.swift */; };
+		10DE43565A176A802D941CA4 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E565F2DFF55809ADCF57129B /* Clipboard.swift */; };
+		11016CA92AB753C0F742EB79 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 593D953B6824224C2737411D /* Haptics.swift */; };
+		112EC7A5423ADF45E6E0E4EE /* saronic_1_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 5482C610AA7B92157491A96C /* saronic_1_0.geojson */; };
+		1275475E068B9CD79AA9671A /* NavMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F64E9DABE1045893E5B62E /* NavMath.swift */; };
+		140A8E83EEE1D41F955792DE /* AnchorPiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D11F288FA0A89BEDED00901 /* AnchorPiService.swift */; };
+		1727897BCE9790FE99C2C8D2 /* Instrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69CB91775AA2BAD0353001F3 /* Instrument.swift */; };
+		18E744068993C65C4BB27D42 /* ContourService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 674ABEEC26358F0836711050 /* ContourService.swift */; };
+		1903CBA661A75D875DBDE1DD /* MatauNavWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 0EDF101AE51B87ADE12C3AB5 /* MatauNavWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1A98FE1823A578E34A92AEAB /* AnchorForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58405ABA14FEE8661974F409 /* AnchorForecast.swift */; };
+		1D16B981FF1047BD28154182 /* PiStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0BA6990C9EB54A5139BEEE /* PiStateService.swift */; };
+		1FF89A026BF28579AB3AA2E1 /* SheetDetents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D9AA1E1245958F39A3E748 /* SheetDetents.swift */; };
+		2011FE41B546F7232201A6B7 /* AutopilotWatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558B6467820B3EFC9B6C23D3 /* AutopilotWatchView.swift */; };
+		21789BF9F097BB83A724C779 /* cyclades_0_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 89F383BAC495E4221983489C /* cyclades_0_2.geojson */; };
+		22E9956F8730C794B002E684 /* OSMMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B068CBEBD05D643CFBE9C2CB /* OSMMapView.swift */; };
+		28558968F016687C07681E1D /* SignalKService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0377797A662592CF18126 /* SignalKService.swift */; };
+		2E8EAC88BCEFDB4F64A5213A /* PointerCursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609BF820C11DF38D977B1347 /* PointerCursor.swift */; };
+		3496C97C810291234E410CBB /* SignalKService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0377797A662592CF18126 /* SignalKService.swift */; };
+		3B1CC7CF87D6A6D6E5B77903 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A022487F82D41FBB6D8989E7 /* Assets.xcassets */; };
+		3BBF84DFDC36E129867ED64B /* AnchorWatchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25422954786374F71977A5F /* AnchorWatchService.swift */; };
+		3C60BED7E0688FBCFA63AA4A /* cyclades_1_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 80DB19B942A7FAB327EC0AAF /* cyclades_1_0.geojson */; };
+		3C8E38960894A0C63BDFE6B9 /* BathymetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0540AEC33BB9EF15E83083C8 /* BathymetryService.swift */; };
+		3D9AB46EA09E9269A435995F /* PredictWindService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E306EDDDAB1A5807D435F0F2 /* PredictWindService.swift */; };
+		3E5DFBBA6DA936A0968CBD98 /* PredictWindService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E306EDDDAB1A5807D435F0F2 /* PredictWindService.swift */; };
+		3E6872E2CE9F53375B9A32A6 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B165D943D7B780D49DD3852 /* AppSettings.swift */; };
+		3F37FC55DC5667E3A2A3927B /* AnchorForecastSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6807DE32E0CDF62B2CA2BB00 /* AnchorForecastSettingsView.swift */; };
+		415DD89E53A7664B6AC731FE /* SignalKCredentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20DF2F205A92C4217A05FC8 /* SignalKCredentials.swift */; };
+		4509026FEFBB2DD3211A2FBE /* cyclades_0_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 7BAB34B3D56EEE9A8987B8B3 /* cyclades_0_0.geojson */; };
+		463AE06DF73CA19E4E398DE8 /* GarminWebSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415B68AD62B4E1E62244FF48 /* GarminWebSheet.swift */; };
+		46440A5ED834C6FBE5D6673B /* messinia_0_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = E9FA7B4B6C68544795D60DC4 /* messinia_0_0.geojson */; };
+		472A5DA5941BDBAF666F2670 /* RegionPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFFE8D5D43FC481E3E119F1 /* RegionPickerSheet.swift */; };
+		47F953ECD2E07840D6B738AD /* ComingSoonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE637732AFEB2088030D0D9D /* ComingSoonView.swift */; };
+		4C9F4F82C29A721824A196A4 /* cyclades_1_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 80DB19B942A7FAB327EC0AAF /* cyclades_1_0.geojson */; };
+		4D26A2CE5D9161ADA426A0ED /* cyclades_0_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 8A234767D9DCF43D300E0172 /* cyclades_0_1.geojson */; };
+		4DF8D23B5DCA40F9C0049F76 /* TrackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5B230D35D8A3A2499E836A /* TrackService.swift */; };
+		56591B399792DC305058D141 /* WindRibbon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9464B6F72A8A48C1B1D1D62 /* WindRibbon.swift */; };
+		5A1791677BE3346C2CDF6276 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E56E25F6117F2FABFD749F4 /* Theme.swift */; };
+		5A4C8C9828C31F4443BF5D8B /* cyclades_2_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 10FA2E66571B08B2B6B92520 /* cyclades_2_2.geojson */; };
+		5D2A9A57D6D97E2577B4AD07 /* InstrumentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A600307ACFD63D9A4DF2BCE /* InstrumentsView.swift */; };
+		5DE671E5A990258FC818AE58 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873FD5CCAAB94036CA22A85F /* ShareSheet.swift */; };
+		5E80D8FC1C2311E0F78E2A76 /* TilePrefetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F87944F9C892B49FEBB0FF16 /* TilePrefetcher.swift */; };
+		606DF9543C08B9FC099FFF74 /* PhoneWatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B206BA53370B5D64BDDA9966 /* PhoneWatchBridge.swift */; };
+		646E3172726E5C9AEC7D3DC2 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A32D246AD657DA047BC4E24 /* SetupView.swift */; };
+		6620CCD817F67BBFB065B173 /* AnchorForecastSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6807DE32E0CDF62B2CA2BB00 /* AnchorForecastSettingsView.swift */; };
+		6A4C39955AD25E780029CE79 /* AppActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF25FE979E5DF24CF670929 /* AppActivity.swift */; };
+		6AF18F816407B073F8FEFF72 /* saronic_2_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 0CD1D52C998B3D0161E9F07F /* saronic_2_0.geojson */; };
+		6B6E39518AD7D759B349A74A /* AppMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41CED90AE4C869C61E819BF1 /* AppMonitor.swift */; };
+		6BA4A4A02F8DDAF9E114FE9E /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF0222EF245484BD3AFE972 /* ContactPicker.swift */; };
+		6CB8C1F9C9B699B9878F7E65 /* saronic_2_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 6675B2E59D5B0407BDFF2D14 /* saronic_2_1.geojson */; };
+		6D9BFAB2A9D1786FD27E3ECA /* cyclades_2_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 5DF3CD6648756B50CF7D4F06 /* cyclades_2_1.geojson */; };
+		7153483456301CA8D04C43F3 /* ViewModifiers+Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EE90BBABDA9905AA2084B52 /* ViewModifiers+Platform.swift */; };
+		720981E6321B70FE72D72EB9 /* PlatformSymbol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F2A584B9B60C1EB9C560261 /* PlatformSymbol.swift */; };
+		721772695542AA3819F68B84 /* cyclades_0_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 89F383BAC495E4221983489C /* cyclades_0_2.geojson */; };
+		72880C4C7957005662FD6991 /* cyclades_0_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 7BAB34B3D56EEE9A8987B8B3 /* cyclades_0_0.geojson */; };
+		72A20234F95FC328AFB38FDF /* ContourService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 674ABEEC26358F0836711050 /* ContourService.swift */; };
+		739076D2C07B1B7FA9C8542A /* WatchPiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3160DDAFBB0AB49A077D3E9 /* WatchPiClient.swift */; };
+		7A24E9B6F66ED67090FB97D2 /* MacShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C9751959B3241E8C219B65 /* MacShell.swift */; };
+		7BAAE254051E1F0F588F89B9 /* WindRibbon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9464B6F72A8A48C1B1D1D62 /* WindRibbon.swift */; };
+		7DAAB4DED28C4AAC38A1835A /* ChartBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7690E30DA7C36C3BED77980A /* ChartBridge.swift */; };
+		8383024C109D0BAF0F375E13 /* ChartSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABAE7CB273EA7EA8926EF8F /* ChartSettingsSheet.swift */; };
+		83A0E492158A29A28360C079 /* AISService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405E0015529E4657BB98CC93 /* AISService.swift */; };
+		8A1873FDC659DF634BA531E2 /* RangeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3174CC04DF5A2F061F1E558 /* RangeSlider.swift */; };
+		8FFB9BD6C8C9C7FFE2AE0773 /* saronic_2_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 6675B2E59D5B0407BDFF2D14 /* saronic_2_1.geojson */; };
+		916ADCA80899D0ACE488AC07 /* TileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9385198A602324F3B291F0EB /* TileDownloader.swift */; };
+		949786378533ACE48E3D2C86 /* TrackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5B230D35D8A3A2499E836A /* TrackService.swift */; };
+		9859B0816D9A564F8D40E529 /* TilePrefetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F87944F9C892B49FEBB0FF16 /* TilePrefetcher.swift */; };
+		993DF1F249090B6F5787EE87 /* saronic_0_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 1C1861AE7D6F214DBACC3B70 /* saronic_0_1.geojson */; };
+		9B9B52800B9555EC4F7534C0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A022487F82D41FBB6D8989E7 /* Assets.xcassets */; };
+		9E1D187E0EDD8CB97E2AC001 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A32D246AD657DA047BC4E24 /* SetupView.swift */; };
+		9F7781879988D8FB91580C78 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 104162BFF64FA97BE5CFC780 /* Assets.xcassets */; };
+		A0E47355CB5C1E359606B5BC /* messinia_0_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = E9FA7B4B6C68544795D60DC4 /* messinia_0_0.geojson */; };
+		A20C62D6DA9C0108EDB8B4D7 /* saronic_0_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 624927F635C0EF85FD4A65BD /* saronic_0_0.geojson */; };
+		A59466ECAA044FB08DC2D1D4 /* cyclades_1_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 8CE19AD99FA0355C7595CDC7 /* cyclades_1_2.geojson */; };
+		A7A616E83CCA3470A43BA76A /* WindRoseWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A082A6F82697ED6EB140976C /* WindRoseWatch.swift */; };
+		A7BF31E430FC5C12EB88C4B7 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB5D4C12D7DD6379078DC52 /* ChartView.swift */; };
+		A7C45D56EBC1BF567D759B35 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C1E303E5444D3EFAF53C27 /* ContentView.swift */; };
+		A7CDBD90E3973DA9390FE099 /* AnchorWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A3663C39C598474B790D9E /* AnchorWizard.swift */; };
+		A9244C14AD1F89925A84D7C1 /* RegionPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFFE8D5D43FC481E3E119F1 /* RegionPickerSheet.swift */; };
+		A92A2C1D941203F313CF9FDD /* saronic_1_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = AFCEEE8A0EE2776DFD024379 /* saronic_1_1.geojson */; };
+		AE14E92D9CFC2720B192A12A /* ChartSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABAE7CB273EA7EA8926EF8F /* ChartSettingsSheet.swift */; };
+		AE2543F98E72F1C019E6F921 /* RangeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3174CC04DF5A2F061F1E558 /* RangeSlider.swift */; };
+		AE36D1D6991F674EBCC2AD58 /* AppActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF25FE979E5DF24CF670929 /* AppActivity.swift */; };
+		AF2B10085D7F67D4F1DC4CB2 /* PlatformColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA48816DB2D0C18EEAC0442F /* PlatformColor+Hex.swift */; };
+		B29B55DCCF2389ADE88DE8A7 /* AISService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405E0015529E4657BB98CC93 /* AISService.swift */; };
+		B32A9FD5CC2368FBCC7435C0 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C48CF1230600851533BC03 /* Platform.swift */; };
+		B415930A724A6291F51B788B /* MacShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C9751959B3241E8C219B65 /* MacShell.swift */; };
+		B69CC7480FE4303D440A8401 /* MatauNavWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBACB720727B286CE3D8784 /* MatauNavWatchApp.swift */; };
+		B742AB5D31BFC49E066D71DE /* ViewModifiers+Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EE90BBABDA9905AA2084B52 /* ViewModifiers+Platform.swift */; };
+		B8C021BC9A56E4BED8F9214E /* PiStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0BA6990C9EB54A5139BEEE /* PiStateService.swift */; };
+		B9C3C10A06E6C4494C2F9236 /* AlarmPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4C6D5265327C73A830680D7 /* AlarmPlayer.swift */; };
+		B9F2523B199C632E7B669D19 /* OSMMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B068CBEBD05D643CFBE9C2CB /* OSMMapView.swift */; };
+		BA6AA417D557D741C396FEE0 /* cyclades_1_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 964AD99E44D200C873174D6C /* cyclades_1_1.geojson */; };
+		BAAE34CBD1F60078BFA0B660 /* PointerCursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609BF820C11DF38D977B1347 /* PointerCursor.swift */; };
+		BB106128B087A8F88704DF4D /* cyclades_2_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 5DF3CD6648756B50CF7D4F06 /* cyclades_2_1.geojson */; };
+		BB8EEB22928F4CCB46D2B2B4 /* messinia_1_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 3C8E7EBEE6D7F43A1A979BC8 /* messinia_1_0.geojson */; };
+		BCCFE8C9A58AF082CFE19526 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB5D4C12D7DD6379078DC52 /* ChartView.swift */; };
+		BD32A90AF27C1FB715691347 /* saronic_1_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = AFCEEE8A0EE2776DFD024379 /* saronic_1_1.geojson */; };
+		BD659621C651B31E45FC48DB /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C48CF1230600851533BC03 /* Platform.swift */; };
+		BD70337A9C1840DE113F8F8A /* WaypointPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA8DE69EAFAC8986575B2B4 /* WaypointPickerSheet.swift */; };
+		BDCEB9343E4349E6310981D1 /* cyclades_2_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = BA5FB9EA7922F3886ECCCEDA /* cyclades_2_0.geojson */; };
+		BEF7B179B81B3B24DD45D763 /* BathymetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0540AEC33BB9EF15E83083C8 /* BathymetryService.swift */; };
+		C08DEBF11D748AEB467B99C3 /* saronic_0_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 1C1861AE7D6F214DBACC3B70 /* saronic_0_1.geojson */; };
+		C0B8F3437712E52035A81D37 /* MatauNavApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87687852BA221EE2A77036EE /* MatauNavApp.swift */; };
+		C5D51405B34DAA5EABE66EB9 /* saronic_2_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 0CD1D52C998B3D0161E9F07F /* saronic_2_0.geojson */; };
+		C9A68916980BA2CB6A4D6AC2 /* cyclades_2_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = BA5FB9EA7922F3886ECCCEDA /* cyclades_2_0.geojson */; };
+		CA3FA349E4E9D0976EFA4B8C /* PredictWindKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5D09AB8252DE87ADE88EC /* PredictWindKeychain.swift */; };
+		CC380BDE8D6C5843AFD7C3D8 /* cyclades_1_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 964AD99E44D200C873174D6C /* cyclades_1_1.geojson */; };
+		CD327AA9EFFEB6F57D1FBACF /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 593D953B6824224C2737411D /* Haptics.swift */; };
+		CEDBBEA0904EA5A7DE0AB9A6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C1E303E5444D3EFAF53C27 /* ContentView.swift */; };
+		D057784C9D8C18D44B3E852D /* ChartMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C495ED1CB57E68287B1EBF88 /* ChartMapView.swift */; };
+		D137C8A6FCC0C572C7DB58E6 /* AlarmPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4C6D5265327C73A830680D7 /* AlarmPlayer.swift */; };
+		D5E91616B80509F5B07D0DD3 /* AnchorForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58405ABA14FEE8661974F409 /* AnchorForecast.swift */; };
+		D615542B2E6062A8ABB23575 /* WatchTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9EC93A35C684FFB74DEA24 /* WatchTheme.swift */; };
+		D72E0829343B3656A47A1A82 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E565F2DFF55809ADCF57129B /* Clipboard.swift */; };
+		D7B7AAF070DB52F361D59AC5 /* ChartMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C495ED1CB57E68287B1EBF88 /* ChartMapView.swift */; };
+		D83B937A71838536B4139B6A /* WaypointPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA8DE69EAFAC8986575B2B4 /* WaypointPickerSheet.swift */; };
+		DAA0836C59846CE903C571D5 /* TileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9385198A602324F3B291F0EB /* TileDownloader.swift */; };
+		DAD87D3071296F1DACE556F7 /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF0222EF245484BD3AFE972 /* ContactPicker.swift */; };
+		DAFFECD10F8139343EFA301A /* SystemAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ACE13B5C86F140EEE644E52 /* SystemAudio.swift */; };
+		DB3D804DEF6617D98808A1C9 /* Instrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69CB91775AA2BAD0353001F3 /* Instrument.swift */; };
+		DBC3C4589751DAACAF5725D5 /* PredictWindKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5D09AB8252DE87ADE88EC /* PredictWindKeychain.swift */; };
+		DBCC068446662D60F9C28C50 /* AnchorPiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D11F288FA0A89BEDED00901 /* AnchorPiService.swift */; };
+		DE6773BBF19EE3B39CCED90F /* cyclades_0_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 8A234767D9DCF43D300E0172 /* cyclades_0_1.geojson */; };
+		E0A408FDC2C8203256A72D08 /* SystemAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ACE13B5C86F140EEE644E52 /* SystemAudio.swift */; };
+		E3249B03A13F5B7E77047F0A /* ChartBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7690E30DA7C36C3BED77980A /* ChartBridge.swift */; };
+		E484B86D04751B9069996F19 /* AppMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41CED90AE4C869C61E819BF1 /* AppMonitor.swift */; };
+		E853E48484EDE69B7B4DB18F /* paros.geojson in Resources */ = {isa = PBXBuildFile; fileRef = FFD0C020A5E1B44C8E9FC367 /* paros.geojson */; };
+		EBBACEE0648C634CEAC7FA12 /* PlatformColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA48816DB2D0C18EEAC0442F /* PlatformColor+Hex.swift */; };
+		EC2B8BB31CCB3A96D00B172A /* cyclades_2_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 10FA2E66571B08B2B6B92520 /* cyclades_2_2.geojson */; };
+		EC8767F9C7651DB2FEF4708B /* PlatformSymbol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F2A584B9B60C1EB9C560261 /* PlatformSymbol.swift */; };
+		ECD5DBDB042B7A2D6D83D9C0 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873FD5CCAAB94036CA22A85F /* ShareSheet.swift */; };
+		F072DE25EA0B000C7752D9AE /* NavMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F64E9DABE1045893E5B62E /* NavMath.swift */; };
+		F0A1BDBEC65C3242CC628015 /* cyclades_1_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 8CE19AD99FA0355C7595CDC7 /* cyclades_1_2.geojson */; };
+		F35FC6588D9B28450ED36000 /* WatchSessionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B15E14DFC1BA28E16D3313FD /* WatchSessionBridge.swift */; };
+		F569C12896CA07BCA7593C96 /* AutopilotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1135C062B17F7B0EE3950E61 /* AutopilotView.swift */; };
+		F9F0B202ABAD45AF6D8AC1C8 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B165D943D7B780D49DD3852 /* AppSettings.swift */; };
+		FAF16A477157DD5FA44003A0 /* messinia_1_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 3C8E7EBEE6D7F43A1A979BC8 /* messinia_1_0.geojson */; };
+		FB1E34EE02928CF239D5F38E /* SheetDetents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D9AA1E1245958F39A3E748 /* SheetDetents.swift */; };
+		FC1904B46E54445AAF2FA712 /* AutopilotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1135C062B17F7B0EE3950E61 /* AutopilotView.swift */; };
+		FC68D939C1E745260F36379C /* saronic_1_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 5482C610AA7B92157491A96C /* saronic_1_0.geojson */; };
+		FD997F8D19CA2ADBFABB8708 /* saronic_0_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 624927F635C0EF85FD4A65BD /* saronic_0_0.geojson */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F3ED34E02A8229CCFB9D7C25 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F91B2B2917E84BDB33D39458 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05C3A21E4EA1261F4B551FBC;
+			remoteInfo = MatauNavWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CE0085CCE58B4C14548ADF1A /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				1903CBA661A75D875DBDE1DD /* MatauNavWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		00C1E303E5444D3EFAF53C27 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		01D9AA1E1245958F39A3E748 /* SheetDetents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetDetents.swift; sourceTree = "<group>"; };
+		0540AEC33BB9EF15E83083C8 /* BathymetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BathymetryService.swift; sourceTree = "<group>"; };
+		0ABAE7CB273EA7EA8926EF8F /* ChartSettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartSettingsSheet.swift; sourceTree = "<group>"; };
+		0CD1D52C998B3D0161E9F07F /* saronic_2_0.geojson */ = {isa = PBXFileReference; path = saronic_2_0.geojson; sourceTree = "<group>"; };
+		0EDF101AE51B87ADE12C3AB5 /* MatauNavWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatauNavWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		104162BFF64FA97BE5CFC780 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		10FA2E66571B08B2B6B92520 /* cyclades_2_2.geojson */ = {isa = PBXFileReference; path = cyclades_2_2.geojson; sourceTree = "<group>"; };
+		1135C062B17F7B0EE3950E61 /* AutopilotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotView.swift; sourceTree = "<group>"; };
+		1C1861AE7D6F214DBACC3B70 /* saronic_0_1.geojson */ = {isa = PBXFileReference; path = saronic_0_1.geojson; sourceTree = "<group>"; };
+		2D11F288FA0A89BEDED00901 /* AnchorPiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorPiService.swift; sourceTree = "<group>"; };
+		2EE90BBABDA9905AA2084B52 /* ViewModifiers+Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModifiers+Platform.swift"; sourceTree = "<group>"; };
+		2F3E69D4672C9517F7055028 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-macOS.plist"; sourceTree = "<group>"; };
+		34A5D09AB8252DE87ADE88EC /* PredictWindKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredictWindKeychain.swift; sourceTree = "<group>"; };
+		3BB5D4C12D7DD6379078DC52 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
+		3C8E7EBEE6D7F43A1A979BC8 /* messinia_1_0.geojson */ = {isa = PBXFileReference; path = messinia_1_0.geojson; sourceTree = "<group>"; };
+		405E0015529E4657BB98CC93 /* AISService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISService.swift; sourceTree = "<group>"; };
+		415B68AD62B4E1E62244FF48 /* GarminWebSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminWebSheet.swift; sourceTree = "<group>"; };
+		41CED90AE4C869C61E819BF1 /* AppMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMonitor.swift; sourceTree = "<group>"; };
+		4E56E25F6117F2FABFD749F4 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		5482C610AA7B92157491A96C /* saronic_1_0.geojson */ = {isa = PBXFileReference; path = saronic_1_0.geojson; sourceTree = "<group>"; };
+		558B6467820B3EFC9B6C23D3 /* AutopilotWatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotWatchView.swift; sourceTree = "<group>"; };
+		58405ABA14FEE8661974F409 /* AnchorForecast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorForecast.swift; sourceTree = "<group>"; };
+		593D953B6824224C2737411D /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		59F64E9DABE1045893E5B62E /* NavMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavMath.swift; sourceTree = "<group>"; };
+		5DF3CD6648756B50CF7D4F06 /* cyclades_2_1.geojson */ = {isa = PBXFileReference; path = cyclades_2_1.geojson; sourceTree = "<group>"; };
+		609BF820C11DF38D977B1347 /* PointerCursor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointerCursor.swift; sourceTree = "<group>"; };
+		60A3663C39C598474B790D9E /* AnchorWizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorWizard.swift; sourceTree = "<group>"; };
+		624927F635C0EF85FD4A65BD /* saronic_0_0.geojson */ = {isa = PBXFileReference; path = saronic_0_0.geojson; sourceTree = "<group>"; };
+		6675B2E59D5B0407BDFF2D14 /* saronic_2_1.geojson */ = {isa = PBXFileReference; path = saronic_2_1.geojson; sourceTree = "<group>"; };
+		674ABEEC26358F0836711050 /* ContourService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContourService.swift; sourceTree = "<group>"; };
+		6807DE32E0CDF62B2CA2BB00 /* AnchorForecastSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorForecastSettingsView.swift; sourceTree = "<group>"; };
+		69CB91775AA2BAD0353001F3 /* Instrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Instrument.swift; sourceTree = "<group>"; };
+		6AF25FE979E5DF24CF670929 /* AppActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActivity.swift; sourceTree = "<group>"; };
+		6E06F4E8264F2591C57E8B1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6F2A584B9B60C1EB9C560261 /* PlatformSymbol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSymbol.swift; sourceTree = "<group>"; };
+		7690E30DA7C36C3BED77980A /* ChartBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartBridge.swift; sourceTree = "<group>"; };
+		76C48CF1230600851533BC03 /* Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
+		7ACE13B5C86F140EEE644E52 /* SystemAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudio.swift; sourceTree = "<group>"; };
+		7BAB34B3D56EEE9A8987B8B3 /* cyclades_0_0.geojson */ = {isa = PBXFileReference; path = cyclades_0_0.geojson; sourceTree = "<group>"; };
+		80DB19B942A7FAB327EC0AAF /* cyclades_1_0.geojson */ = {isa = PBXFileReference; path = cyclades_1_0.geojson; sourceTree = "<group>"; };
+		81F0377797A662592CF18126 /* SignalKService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalKService.swift; sourceTree = "<group>"; };
+		873FD5CCAAB94036CA22A85F /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
+		87687852BA221EE2A77036EE /* MatauNavApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatauNavApp.swift; sourceTree = "<group>"; };
+		89F383BAC495E4221983489C /* cyclades_0_2.geojson */ = {isa = PBXFileReference; path = cyclades_0_2.geojson; sourceTree = "<group>"; };
+		8A234767D9DCF43D300E0172 /* cyclades_0_1.geojson */ = {isa = PBXFileReference; path = cyclades_0_1.geojson; sourceTree = "<group>"; };
+		8A32D246AD657DA047BC4E24 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
+		8B165D943D7B780D49DD3852 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		8CE19AD99FA0355C7595CDC7 /* cyclades_1_2.geojson */ = {isa = PBXFileReference; path = cyclades_1_2.geojson; sourceTree = "<group>"; };
+		9385198A602324F3B291F0EB /* TileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileDownloader.swift; sourceTree = "<group>"; };
+		9576FE56C7F2309201BFEF74 /* MatauNav.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MatauNav.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		964AD99E44D200C873174D6C /* cyclades_1_1.geojson */ = {isa = PBXFileReference; path = cyclades_1_1.geojson; sourceTree = "<group>"; };
+		9A600307ACFD63D9A4DF2BCE /* InstrumentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstrumentsView.swift; sourceTree = "<group>"; };
+		A022487F82D41FBB6D8989E7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A082A6F82697ED6EB140976C /* WindRoseWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindRoseWatch.swift; sourceTree = "<group>"; };
+		A20DF2F205A92C4217A05FC8 /* SignalKCredentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalKCredentials.swift; sourceTree = "<group>"; };
+		A9464B6F72A8A48C1B1D1D62 /* WindRibbon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindRibbon.swift; sourceTree = "<group>"; };
+		AA9EC93A35C684FFB74DEA24 /* WatchTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTheme.swift; sourceTree = "<group>"; };
+		AAFFE8D5D43FC481E3E119F1 /* RegionPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionPickerSheet.swift; sourceTree = "<group>"; };
+		AFCEEE8A0EE2776DFD024379 /* saronic_1_1.geojson */ = {isa = PBXFileReference; path = saronic_1_1.geojson; sourceTree = "<group>"; };
+		B068CBEBD05D643CFBE9C2CB /* OSMMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSMMapView.swift; sourceTree = "<group>"; };
+		B15E14DFC1BA28E16D3313FD /* WatchSessionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionBridge.swift; sourceTree = "<group>"; };
+		B206BA53370B5D64BDDA9966 /* PhoneWatchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWatchBridge.swift; sourceTree = "<group>"; };
+		B3174CC04DF5A2F061F1E558 /* RangeSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSlider.swift; sourceTree = "<group>"; };
+		BA5FB9EA7922F3886ECCCEDA /* cyclades_2_0.geojson */ = {isa = PBXFileReference; path = cyclades_2_0.geojson; sourceTree = "<group>"; };
+		BAA8DE69EAFAC8986575B2B4 /* WaypointPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointPickerSheet.swift; sourceTree = "<group>"; };
+		BBF0222EF245484BD3AFE972 /* ContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPicker.swift; sourceTree = "<group>"; };
+		C25422954786374F71977A5F /* AnchorWatchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorWatchService.swift; sourceTree = "<group>"; };
+		C495ED1CB57E68287B1EBF88 /* ChartMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartMapView.swift; sourceTree = "<group>"; };
+		C4C6D5265327C73A830680D7 /* AlarmPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmPlayer.swift; sourceTree = "<group>"; };
+		CC0BA6990C9EB54A5139BEEE /* PiStateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiStateService.swift; sourceTree = "<group>"; };
+		CD5B230D35D8A3A2499E836A /* TrackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackService.swift; sourceTree = "<group>"; };
+		D4C9751959B3241E8C219B65 /* MacShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacShell.swift; sourceTree = "<group>"; };
+		DFBACB720727B286CE3D8784 /* MatauNavWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatauNavWatchApp.swift; sourceTree = "<group>"; };
+		E306EDDDAB1A5807D435F0F2 /* PredictWindService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredictWindService.swift; sourceTree = "<group>"; };
+		E3160DDAFBB0AB49A077D3E9 /* WatchPiClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchPiClient.swift; sourceTree = "<group>"; };
+		E565F2DFF55809ADCF57129B /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
+		E9FA7B4B6C68544795D60DC4 /* messinia_0_0.geojson */ = {isa = PBXFileReference; path = messinia_0_0.geojson; sourceTree = "<group>"; };
+		EA48816DB2D0C18EEAC0442F /* PlatformColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlatformColor+Hex.swift"; sourceTree = "<group>"; };
+		EEDBA43B915A49725611B2E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F63D9455088DAB1572560D3E /* MatauNavMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatauNavMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F87944F9C892B49FEBB0FF16 /* TilePrefetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilePrefetcher.swift; sourceTree = "<group>"; };
+		FE637732AFEB2088030D0D9D /* ComingSoonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComingSoonView.swift; sourceTree = "<group>"; };
+		FFD0C020A5E1B44C8E9FC367 /* paros.geojson */ = {isa = PBXFileReference; path = paros.geojson; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		10D84FE1AEB98A0C80CF8D9F = {
+			isa = PBXGroup;
+			children = (
+				2B4F8AB0B64CD9D6F20DC334 /* MatauNav */,
+				191F6A2AED297690FEEE24C8 /* MatauNavWatch */,
+				633B139C74FDF220AB7FB113 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		191F6A2AED297690FEEE24C8 /* MatauNavWatch */ = {
+			isa = PBXGroup;
+			children = (
+				104162BFF64FA97BE5CFC780 /* Assets.xcassets */,
+				558B6467820B3EFC9B6C23D3 /* AutopilotWatchView.swift */,
+				EEDBA43B915A49725611B2E3 /* Info.plist */,
+				DFBACB720727B286CE3D8784 /* MatauNavWatchApp.swift */,
+				E3160DDAFBB0AB49A077D3E9 /* WatchPiClient.swift */,
+				B15E14DFC1BA28E16D3313FD /* WatchSessionBridge.swift */,
+				AA9EC93A35C684FFB74DEA24 /* WatchTheme.swift */,
+				A082A6F82697ED6EB140976C /* WindRoseWatch.swift */,
+			);
+			path = MatauNavWatch;
+			sourceTree = "<group>";
+		};
+		2B4F8AB0B64CD9D6F20DC334 /* MatauNav */ = {
+			isa = PBXGroup;
+			children = (
+				66E39FA18790FECDD4668428 /* Contours */,
+				88D7BF8DB0605B909DD50C03 /* Platform */,
+				405E0015529E4657BB98CC93 /* AISService.swift */,
+				C4C6D5265327C73A830680D7 /* AlarmPlayer.swift */,
+				58405ABA14FEE8661974F409 /* AnchorForecast.swift */,
+				6807DE32E0CDF62B2CA2BB00 /* AnchorForecastSettingsView.swift */,
+				2D11F288FA0A89BEDED00901 /* AnchorPiService.swift */,
+				C25422954786374F71977A5F /* AnchorWatchService.swift */,
+				60A3663C39C598474B790D9E /* AnchorWizard.swift */,
+				41CED90AE4C869C61E819BF1 /* AppMonitor.swift */,
+				8B165D943D7B780D49DD3852 /* AppSettings.swift */,
+				A022487F82D41FBB6D8989E7 /* Assets.xcassets */,
+				1135C062B17F7B0EE3950E61 /* AutopilotView.swift */,
+				0540AEC33BB9EF15E83083C8 /* BathymetryService.swift */,
+				7690E30DA7C36C3BED77980A /* ChartBridge.swift */,
+				C495ED1CB57E68287B1EBF88 /* ChartMapView.swift */,
+				0ABAE7CB273EA7EA8926EF8F /* ChartSettingsSheet.swift */,
+				3BB5D4C12D7DD6379078DC52 /* ChartView.swift */,
+				FE637732AFEB2088030D0D9D /* ComingSoonView.swift */,
+				BBF0222EF245484BD3AFE972 /* ContactPicker.swift */,
+				00C1E303E5444D3EFAF53C27 /* ContentView.swift */,
+				674ABEEC26358F0836711050 /* ContourService.swift */,
+				415B68AD62B4E1E62244FF48 /* GarminWebSheet.swift */,
+				2F3E69D4672C9517F7055028 /* Info-macOS.plist */,
+				6E06F4E8264F2591C57E8B1D /* Info.plist */,
+				69CB91775AA2BAD0353001F3 /* Instrument.swift */,
+				9A600307ACFD63D9A4DF2BCE /* InstrumentsView.swift */,
+				D4C9751959B3241E8C219B65 /* MacShell.swift */,
+				87687852BA221EE2A77036EE /* MatauNavApp.swift */,
+				59F64E9DABE1045893E5B62E /* NavMath.swift */,
+				B068CBEBD05D643CFBE9C2CB /* OSMMapView.swift */,
+				B206BA53370B5D64BDDA9966 /* PhoneWatchBridge.swift */,
+				CC0BA6990C9EB54A5139BEEE /* PiStateService.swift */,
+				34A5D09AB8252DE87ADE88EC /* PredictWindKeychain.swift */,
+				E306EDDDAB1A5807D435F0F2 /* PredictWindService.swift */,
+				B3174CC04DF5A2F061F1E558 /* RangeSlider.swift */,
+				AAFFE8D5D43FC481E3E119F1 /* RegionPickerSheet.swift */,
+				8A32D246AD657DA047BC4E24 /* SetupView.swift */,
+				873FD5CCAAB94036CA22A85F /* ShareSheet.swift */,
+				A20DF2F205A92C4217A05FC8 /* SignalKCredentials.swift */,
+				81F0377797A662592CF18126 /* SignalKService.swift */,
+				4E56E25F6117F2FABFD749F4 /* Theme.swift */,
+				9385198A602324F3B291F0EB /* TileDownloader.swift */,
+				F87944F9C892B49FEBB0FF16 /* TilePrefetcher.swift */,
+				CD5B230D35D8A3A2499E836A /* TrackService.swift */,
+				BAA8DE69EAFAC8986575B2B4 /* WaypointPickerSheet.swift */,
+				A9464B6F72A8A48C1B1D1D62 /* WindRibbon.swift */,
+			);
+			path = MatauNav;
+			sourceTree = "<group>";
+		};
+		633B139C74FDF220AB7FB113 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9576FE56C7F2309201BFEF74 /* MatauNav.app */,
+				F63D9455088DAB1572560D3E /* MatauNavMac.app */,
+				0EDF101AE51B87ADE12C3AB5 /* MatauNavWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		66E39FA18790FECDD4668428 /* Contours */ = {
+			isa = PBXGroup;
+			children = (
+				7BAB34B3D56EEE9A8987B8B3 /* cyclades_0_0.geojson */,
+				8A234767D9DCF43D300E0172 /* cyclades_0_1.geojson */,
+				89F383BAC495E4221983489C /* cyclades_0_2.geojson */,
+				80DB19B942A7FAB327EC0AAF /* cyclades_1_0.geojson */,
+				964AD99E44D200C873174D6C /* cyclades_1_1.geojson */,
+				8CE19AD99FA0355C7595CDC7 /* cyclades_1_2.geojson */,
+				BA5FB9EA7922F3886ECCCEDA /* cyclades_2_0.geojson */,
+				5DF3CD6648756B50CF7D4F06 /* cyclades_2_1.geojson */,
+				10FA2E66571B08B2B6B92520 /* cyclades_2_2.geojson */,
+				E9FA7B4B6C68544795D60DC4 /* messinia_0_0.geojson */,
+				3C8E7EBEE6D7F43A1A979BC8 /* messinia_1_0.geojson */,
+				FFD0C020A5E1B44C8E9FC367 /* paros.geojson */,
+				624927F635C0EF85FD4A65BD /* saronic_0_0.geojson */,
+				1C1861AE7D6F214DBACC3B70 /* saronic_0_1.geojson */,
+				5482C610AA7B92157491A96C /* saronic_1_0.geojson */,
+				AFCEEE8A0EE2776DFD024379 /* saronic_1_1.geojson */,
+				0CD1D52C998B3D0161E9F07F /* saronic_2_0.geojson */,
+				6675B2E59D5B0407BDFF2D14 /* saronic_2_1.geojson */,
+			);
+			path = Contours;
+			sourceTree = "<group>";
+		};
+		88D7BF8DB0605B909DD50C03 /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				6AF25FE979E5DF24CF670929 /* AppActivity.swift */,
+				E565F2DFF55809ADCF57129B /* Clipboard.swift */,
+				593D953B6824224C2737411D /* Haptics.swift */,
+				76C48CF1230600851533BC03 /* Platform.swift */,
+				EA48816DB2D0C18EEAC0442F /* PlatformColor+Hex.swift */,
+				6F2A584B9B60C1EB9C560261 /* PlatformSymbol.swift */,
+				609BF820C11DF38D977B1347 /* PointerCursor.swift */,
+				01D9AA1E1245958F39A3E748 /* SheetDetents.swift */,
+				7ACE13B5C86F140EEE644E52 /* SystemAudio.swift */,
+				2EE90BBABDA9905AA2084B52 /* ViewModifiers+Platform.swift */,
+			);
+			path = Platform;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		05C3A21E4EA1261F4B551FBC /* MatauNavWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AD9CBCC039ECC91E7E2ED620 /* Build configuration list for PBXNativeTarget "MatauNavWatch" */;
+			buildPhases = (
+				4F9FF50E73C29A406F8A58FB /* Sources */,
+				47FAEF069806F750EB8BD7C4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MatauNavWatch;
+			packageProductDependencies = (
+			);
+			productName = MatauNavWatch;
+			productReference = 0EDF101AE51B87ADE12C3AB5 /* MatauNavWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		40D5631C69829A2E393BAEB3 /* MatauNav */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A2A973C75CD1C2B15DB650C1 /* Build configuration list for PBXNativeTarget "MatauNav" */;
+			buildPhases = (
+				DEB528221F3A55E55B6D3FD3 /* Sources */,
+				38D7DABBBAABB02AB0BFBD59 /* Resources */,
+				CE0085CCE58B4C14548ADF1A /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C28BFB3E2CEAC04C5501F2FA /* PBXTargetDependency */,
+			);
+			name = MatauNav;
+			packageProductDependencies = (
+			);
+			productName = MatauNav;
+			productReference = 9576FE56C7F2309201BFEF74 /* MatauNav.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4B440A89408BCF3C86D6AB1E /* MatauNavMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2EA159327A827A202762D52E /* Build configuration list for PBXNativeTarget "MatauNavMac" */;
+			buildPhases = (
+				57A1AE8012983D58537C3587 /* Sources */,
+				667D2BFF97DD607ADED79076 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MatauNavMac;
+			packageProductDependencies = (
+			);
+			productName = MatauNavMac;
+			productReference = F63D9455088DAB1572560D3E /* MatauNavMac.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F91B2B2917E84BDB33D39458 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					05C3A21E4EA1261F4B551FBC = {
+						DevelopmentTeam = 9WDB3ZU52G;
+						ProvisioningStyle = Automatic;
+					};
+					40D5631C69829A2E393BAEB3 = {
+						DevelopmentTeam = 9WDB3ZU52G;
+						ProvisioningStyle = Automatic;
+					};
+					4B440A89408BCF3C86D6AB1E = {
+						DevelopmentTeam = 9WDB3ZU52G;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 75269160F8ADC6C2FCB2BD86 /* Build configuration list for PBXProject "MatauNav" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 10D84FE1AEB98A0C80CF8D9F;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 633B139C74FDF220AB7FB113 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				40D5631C69829A2E393BAEB3 /* MatauNav */,
+				4B440A89408BCF3C86D6AB1E /* MatauNavMac */,
+				05C3A21E4EA1261F4B551FBC /* MatauNavWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		38D7DABBBAABB02AB0BFBD59 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B1CC7CF87D6A6D6E5B77903 /* Assets.xcassets in Resources */,
+				72880C4C7957005662FD6991 /* cyclades_0_0.geojson in Resources */,
+				4D26A2CE5D9161ADA426A0ED /* cyclades_0_1.geojson in Resources */,
+				721772695542AA3819F68B84 /* cyclades_0_2.geojson in Resources */,
+				3C60BED7E0688FBCFA63AA4A /* cyclades_1_0.geojson in Resources */,
+				CC380BDE8D6C5843AFD7C3D8 /* cyclades_1_1.geojson in Resources */,
+				F0A1BDBEC65C3242CC628015 /* cyclades_1_2.geojson in Resources */,
+				BDCEB9343E4349E6310981D1 /* cyclades_2_0.geojson in Resources */,
+				BB106128B087A8F88704DF4D /* cyclades_2_1.geojson in Resources */,
+				EC2B8BB31CCB3A96D00B172A /* cyclades_2_2.geojson in Resources */,
+				46440A5ED834C6FBE5D6673B /* messinia_0_0.geojson in Resources */,
+				FAF16A477157DD5FA44003A0 /* messinia_1_0.geojson in Resources */,
+				E853E48484EDE69B7B4DB18F /* paros.geojson in Resources */,
+				FD997F8D19CA2ADBFABB8708 /* saronic_0_0.geojson in Resources */,
+				993DF1F249090B6F5787EE87 /* saronic_0_1.geojson in Resources */,
+				FC68D939C1E745260F36379C /* saronic_1_0.geojson in Resources */,
+				A92A2C1D941203F313CF9FDD /* saronic_1_1.geojson in Resources */,
+				6AF18F816407B073F8FEFF72 /* saronic_2_0.geojson in Resources */,
+				8FFB9BD6C8C9C7FFE2AE0773 /* saronic_2_1.geojson in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47FAEF069806F750EB8BD7C4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F7781879988D8FB91580C78 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		667D2BFF97DD607ADED79076 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B9B52800B9555EC4F7534C0 /* Assets.xcassets in Resources */,
+				4509026FEFBB2DD3211A2FBE /* cyclades_0_0.geojson in Resources */,
+				DE6773BBF19EE3B39CCED90F /* cyclades_0_1.geojson in Resources */,
+				21789BF9F097BB83A724C779 /* cyclades_0_2.geojson in Resources */,
+				4C9F4F82C29A721824A196A4 /* cyclades_1_0.geojson in Resources */,
+				BA6AA417D557D741C396FEE0 /* cyclades_1_1.geojson in Resources */,
+				A59466ECAA044FB08DC2D1D4 /* cyclades_1_2.geojson in Resources */,
+				C9A68916980BA2CB6A4D6AC2 /* cyclades_2_0.geojson in Resources */,
+				6D9BFAB2A9D1786FD27E3ECA /* cyclades_2_1.geojson in Resources */,
+				5A4C8C9828C31F4443BF5D8B /* cyclades_2_2.geojson in Resources */,
+				A0E47355CB5C1E359606B5BC /* messinia_0_0.geojson in Resources */,
+				BB8EEB22928F4CCB46D2B2B4 /* messinia_1_0.geojson in Resources */,
+				039A88D451A7B4CB301B88AB /* paros.geojson in Resources */,
+				A20C62D6DA9C0108EDB8B4D7 /* saronic_0_0.geojson in Resources */,
+				C08DEBF11D748AEB467B99C3 /* saronic_0_1.geojson in Resources */,
+				112EC7A5423ADF45E6E0E4EE /* saronic_1_0.geojson in Resources */,
+				BD32A90AF27C1FB715691347 /* saronic_1_1.geojson in Resources */,
+				C5D51405B34DAA5EABE66EB9 /* saronic_2_0.geojson in Resources */,
+				6CB8C1F9C9B699B9878F7E65 /* saronic_2_1.geojson in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4F9FF50E73C29A406F8A58FB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2011FE41B546F7232201A6B7 /* AutopilotWatchView.swift in Sources */,
+				B69CC7480FE4303D440A8401 /* MatauNavWatchApp.swift in Sources */,
+				739076D2C07B1B7FA9C8542A /* WatchPiClient.swift in Sources */,
+				F35FC6588D9B28450ED36000 /* WatchSessionBridge.swift in Sources */,
+				D615542B2E6062A8ABB23575 /* WatchTheme.swift in Sources */,
+				A7A616E83CCA3470A43BA76A /* WindRoseWatch.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		57A1AE8012983D58537C3587 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B29B55DCCF2389ADE88DE8A7 /* AISService.swift in Sources */,
+				D137C8A6FCC0C572C7DB58E6 /* AlarmPlayer.swift in Sources */,
+				D5E91616B80509F5B07D0DD3 /* AnchorForecast.swift in Sources */,
+				6620CCD817F67BBFB065B173 /* AnchorForecastSettingsView.swift in Sources */,
+				DBCC068446662D60F9C28C50 /* AnchorPiService.swift in Sources */,
+				01247DFBA525FE5C83D7D148 /* AnchorWatchService.swift in Sources */,
+				0F306796188638226D305088 /* AnchorWizard.swift in Sources */,
+				6A4C39955AD25E780029CE79 /* AppActivity.swift in Sources */,
+				6B6E39518AD7D759B349A74A /* AppMonitor.swift in Sources */,
+				3E6872E2CE9F53375B9A32A6 /* AppSettings.swift in Sources */,
+				F569C12896CA07BCA7593C96 /* AutopilotView.swift in Sources */,
+				3C8E38960894A0C63BDFE6B9 /* BathymetryService.swift in Sources */,
+				7DAAB4DED28C4AAC38A1835A /* ChartBridge.swift in Sources */,
+				D057784C9D8C18D44B3E852D /* ChartMapView.swift in Sources */,
+				8383024C109D0BAF0F375E13 /* ChartSettingsSheet.swift in Sources */,
+				A7BF31E430FC5C12EB88C4B7 /* ChartView.swift in Sources */,
+				10DE43565A176A802D941CA4 /* Clipboard.swift in Sources */,
+				47F953ECD2E07840D6B738AD /* ComingSoonView.swift in Sources */,
+				6BA4A4A02F8DDAF9E114FE9E /* ContactPicker.swift in Sources */,
+				CEDBBEA0904EA5A7DE0AB9A6 /* ContentView.swift in Sources */,
+				72A20234F95FC328AFB38FDF /* ContourService.swift in Sources */,
+				0BBF4479D315097BBFE9A620 /* GarminWebSheet.swift in Sources */,
+				CD327AA9EFFEB6F57D1FBACF /* Haptics.swift in Sources */,
+				1727897BCE9790FE99C2C8D2 /* Instrument.swift in Sources */,
+				5D2A9A57D6D97E2577B4AD07 /* InstrumentsView.swift in Sources */,
+				7A24E9B6F66ED67090FB97D2 /* MacShell.swift in Sources */,
+				028C0EE7B444DAC57DDAFAB3 /* MatauNavApp.swift in Sources */,
+				1275475E068B9CD79AA9671A /* NavMath.swift in Sources */,
+				B9F2523B199C632E7B669D19 /* OSMMapView.swift in Sources */,
+				B8C021BC9A56E4BED8F9214E /* PiStateService.swift in Sources */,
+				BD659621C651B31E45FC48DB /* Platform.swift in Sources */,
+				EBBACEE0648C634CEAC7FA12 /* PlatformColor+Hex.swift in Sources */,
+				720981E6321B70FE72D72EB9 /* PlatformSymbol.swift in Sources */,
+				2E8EAC88BCEFDB4F64A5213A /* PointerCursor.swift in Sources */,
+				DBC3C4589751DAACAF5725D5 /* PredictWindKeychain.swift in Sources */,
+				3D9AB46EA09E9269A435995F /* PredictWindService.swift in Sources */,
+				8A1873FDC659DF634BA531E2 /* RangeSlider.swift in Sources */,
+				A9244C14AD1F89925A84D7C1 /* RegionPickerSheet.swift in Sources */,
+				9E1D187E0EDD8CB97E2AC001 /* SetupView.swift in Sources */,
+				5DE671E5A990258FC818AE58 /* ShareSheet.swift in Sources */,
+				FB1E34EE02928CF239D5F38E /* SheetDetents.swift in Sources */,
+				415DD89E53A7664B6AC731FE /* SignalKCredentials.swift in Sources */,
+				3496C97C810291234E410CBB /* SignalKService.swift in Sources */,
+				E0A408FDC2C8203256A72D08 /* SystemAudio.swift in Sources */,
+				5A1791677BE3346C2CDF6276 /* Theme.swift in Sources */,
+				DAA0836C59846CE903C571D5 /* TileDownloader.swift in Sources */,
+				5E80D8FC1C2311E0F78E2A76 /* TilePrefetcher.swift in Sources */,
+				949786378533ACE48E3D2C86 /* TrackService.swift in Sources */,
+				7153483456301CA8D04C43F3 /* ViewModifiers+Platform.swift in Sources */,
+				D83B937A71838536B4139B6A /* WaypointPickerSheet.swift in Sources */,
+				56591B399792DC305058D141 /* WindRibbon.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DEB528221F3A55E55B6D3FD3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83A0E492158A29A28360C079 /* AISService.swift in Sources */,
+				B9C3C10A06E6C4494C2F9236 /* AlarmPlayer.swift in Sources */,
+				1A98FE1823A578E34A92AEAB /* AnchorForecast.swift in Sources */,
+				3F37FC55DC5667E3A2A3927B /* AnchorForecastSettingsView.swift in Sources */,
+				140A8E83EEE1D41F955792DE /* AnchorPiService.swift in Sources */,
+				3BBF84DFDC36E129867ED64B /* AnchorWatchService.swift in Sources */,
+				A7CDBD90E3973DA9390FE099 /* AnchorWizard.swift in Sources */,
+				AE36D1D6991F674EBCC2AD58 /* AppActivity.swift in Sources */,
+				E484B86D04751B9069996F19 /* AppMonitor.swift in Sources */,
+				F9F0B202ABAD45AF6D8AC1C8 /* AppSettings.swift in Sources */,
+				FC1904B46E54445AAF2FA712 /* AutopilotView.swift in Sources */,
+				BEF7B179B81B3B24DD45D763 /* BathymetryService.swift in Sources */,
+				E3249B03A13F5B7E77047F0A /* ChartBridge.swift in Sources */,
+				D7B7AAF070DB52F361D59AC5 /* ChartMapView.swift in Sources */,
+				AE14E92D9CFC2720B192A12A /* ChartSettingsSheet.swift in Sources */,
+				BCCFE8C9A58AF082CFE19526 /* ChartView.swift in Sources */,
+				D72E0829343B3656A47A1A82 /* Clipboard.swift in Sources */,
+				0FF956B63F9ECBC4EC38808F /* ComingSoonView.swift in Sources */,
+				DAD87D3071296F1DACE556F7 /* ContactPicker.swift in Sources */,
+				A7C45D56EBC1BF567D759B35 /* ContentView.swift in Sources */,
+				18E744068993C65C4BB27D42 /* ContourService.swift in Sources */,
+				463AE06DF73CA19E4E398DE8 /* GarminWebSheet.swift in Sources */,
+				11016CA92AB753C0F742EB79 /* Haptics.swift in Sources */,
+				DB3D804DEF6617D98808A1C9 /* Instrument.swift in Sources */,
+				082EB9A4C28384120CBD220D /* InstrumentsView.swift in Sources */,
+				B415930A724A6291F51B788B /* MacShell.swift in Sources */,
+				C0B8F3437712E52035A81D37 /* MatauNavApp.swift in Sources */,
+				F072DE25EA0B000C7752D9AE /* NavMath.swift in Sources */,
+				22E9956F8730C794B002E684 /* OSMMapView.swift in Sources */,
+				606DF9543C08B9FC099FFF74 /* PhoneWatchBridge.swift in Sources */,
+				1D16B981FF1047BD28154182 /* PiStateService.swift in Sources */,
+				B32A9FD5CC2368FBCC7435C0 /* Platform.swift in Sources */,
+				AF2B10085D7F67D4F1DC4CB2 /* PlatformColor+Hex.swift in Sources */,
+				EC8767F9C7651DB2FEF4708B /* PlatformSymbol.swift in Sources */,
+				BAAE34CBD1F60078BFA0B660 /* PointerCursor.swift in Sources */,
+				CA3FA349E4E9D0976EFA4B8C /* PredictWindKeychain.swift in Sources */,
+				3E5DFBBA6DA936A0968CBD98 /* PredictWindService.swift in Sources */,
+				AE2543F98E72F1C019E6F921 /* RangeSlider.swift in Sources */,
+				472A5DA5941BDBAF666F2670 /* RegionPickerSheet.swift in Sources */,
+				646E3172726E5C9AEC7D3DC2 /* SetupView.swift in Sources */,
+				ECD5DBDB042B7A2D6D83D9C0 /* ShareSheet.swift in Sources */,
+				1FF89A026BF28579AB3AA2E1 /* SheetDetents.swift in Sources */,
+				01C368105A02D24EE7FC167F /* SignalKCredentials.swift in Sources */,
+				28558968F016687C07681E1D /* SignalKService.swift in Sources */,
+				DAFFECD10F8139343EFA301A /* SystemAudio.swift in Sources */,
+				0394EBF8DB60CCE8C1EBCA1B /* Theme.swift in Sources */,
+				916ADCA80899D0ACE488AC07 /* TileDownloader.swift in Sources */,
+				9859B0816D9A564F8D40E529 /* TilePrefetcher.swift in Sources */,
+				4DF8D23B5DCA40F9C0049F76 /* TrackService.swift in Sources */,
+				B742AB5D31BFC49E066D71DE /* ViewModifiers+Platform.swift in Sources */,
+				BD70337A9C1840DE113F8F8A /* WaypointPickerSheet.swift in Sources */,
+				7BAAE254051E1F0F588F89B9 /* WindRibbon.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C28BFB3E2CEAC04C5501F2FA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05C3A21E4EA1261F4B551FBC /* MatauNavWatch */;
+			targetProxy = F3ED34E02A8229CCFB9D7C25 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		063C6F09B4E0A66104075526 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MatauNav/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.matau.nav;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		25CF893A2C302A1769819126 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "MatauNav/Info-macOS.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matau.nav.mac;
+				PRODUCT_NAME = "Matau Nav";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		39A8F6F1E092CFF947FE8FE3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 9WDB3ZU52G;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		475D056B039C75B8E09204E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MatauNavWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matau.nav.watchkitapp;
+				PRODUCT_NAME = "Matau Nav";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		5F78EAA8424C4C017908A326 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9WDB3ZU52G;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		88BA500921C6CC32EE8B676D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MatauNav/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.matau.nav;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		C0F8F39115BD693494FBF7EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "MatauNav/Info-macOS.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matau.nav.mac;
+				PRODUCT_NAME = "Matau Nav";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+		FA0147B15D784482EDC9C290 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MatauNavWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.matau.nav.watchkitapp;
+				PRODUCT_NAME = "Matau Nav";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2EA159327A827A202762D52E /* Build configuration list for PBXNativeTarget "MatauNavMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25CF893A2C302A1769819126 /* Debug */,
+				C0F8F39115BD693494FBF7EC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		75269160F8ADC6C2FCB2BD86 /* Build configuration list for PBXProject "MatauNav" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				39A8F6F1E092CFF947FE8FE3 /* Debug */,
+				5F78EAA8424C4C017908A326 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A2A973C75CD1C2B15DB650C1 /* Build configuration list for PBXNativeTarget "MatauNav" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				063C6F09B4E0A66104075526 /* Debug */,
+				88BA500921C6CC32EE8B676D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AD9CBCC039ECC91E7E2ED620 /* Build configuration list for PBXNativeTarget "MatauNavWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA0147B15D784482EDC9C290 /* Debug */,
+				475D056B039C75B8E09204E1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F91B2B2917E84BDB33D39458 /* Project object */;
+}

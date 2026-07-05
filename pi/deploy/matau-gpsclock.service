@@ -1,0 +1,7 @@
+[Unit]
+Description=Matau GPS clock watchdog — step system clock from GPS when NTP is absent
+After=signalk.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/bin/matau_gpsclock.py

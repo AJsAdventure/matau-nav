@@ -1,0 +1,24 @@
+[Unit]
+Description=Matau PredictWind proxy (forecast, AIS, routing, departure planning)
+After=network-online.target signalk.service matau-state.service
+Wants=network-online.target
+# Restart-storm guard: if it fails fast, stop after 5 tries in 10 min so a
+# crash loop can never hammer PredictWind logins (multi-session ban risk).
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=pi
+Environment=MATAU_PW_CONFIG=/etc/matau/predictwind.json
+Environment=MATAU_PW_SESSION=/var/lib/matau/predictwind_session.json
+Environment=PW_PORT=10115
+ExecStart=/usr/bin/python3 -u /opt/matau/predictwind_server.py
+Restart=on-failure
+# Gentle restart so reconnection/login attempts stay well-spaced.
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
