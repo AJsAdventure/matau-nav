@@ -31,7 +31,6 @@ final class AnchorPiService {
     private(set) var onTailscale   = false
     private var localCheckCountdown = 0   // how many polls until we try local again
     private let localRetryInterval  = 10  // re-check local every ~5 min (10 × 30s polls)
-    private let player = AlarmPlayer.shared
 
     // MARK: - Monitoring
 
@@ -81,7 +80,7 @@ final class AnchorPiService {
             activeURL          = urlToUse
             if connectionState != .connected {
                 connectionState = .connected
-                player.stop()   // clear Pi-down alarm if it was ringing
+                AlarmSiren.shared.release("pi-daemon")   // clear Pi-down alarm
             }
             return
         }
@@ -97,7 +96,7 @@ final class AnchorPiService {
                 localCheckCountdown = localRetryInterval
                 if connectionState != .connected {
                     connectionState = .connected
-                    player.stop()
+                    AlarmSiren.shared.release("pi-daemon")
                 }
                 return
             }
@@ -107,7 +106,7 @@ final class AnchorPiService {
         consecutiveFails += 1
         connectionState   = .disconnected
         if consecutiveFails >= 3 {
-            player.start()  // Pi unreachable for ~90 s → loud alarm
+            AlarmSiren.shared.acquire("pi-daemon")  // Pi unreachable ≥3 polls → loud alarm
         }
     }
 

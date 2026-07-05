@@ -136,6 +136,12 @@ final class PiStateService {
     func refreshNow() async { await poll() }
 
     private func poll() async {
+        // Re-derive the URL from live settings each poll: the host can change
+        // in Setup at runtime, and a baked-in URL kept polling the OLD Pi
+        // forever behind a green SignalK chip (stale AIS/CPA/route, silently).
+        if let host = settings?.signalKHost, !host.isEmpty {
+            baseURL = "http://\(host):10114"
+        }
         guard let url = URL(string: "\(baseURL)/state") else { return }
         do {
             var req = URLRequest(url: url, timeoutInterval: 4)

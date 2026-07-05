@@ -254,16 +254,14 @@ final class AppSettings {
         let lbp = ud.double(forKey: Keys.anchorLowBatteryPct); anchorLowBatteryPct = lbp > 0 ? lbp : 20
         anchorUseDeviceGPS    = ud.object(forKey: Keys.anchorUseDeviceGPS)    as? Bool ?? true
         anchorMooringType     = ud.string(forKey: Keys.anchorMooringType) ?? "swinging"
-        if let d = ud.data(forKey: Keys.savedAnchorages),
-           let v = try? JSONDecoder().decode([Anchorage].self, from: d) {
+        if let v = Self.loadBlob([Anchorage].self, key: Keys.savedAnchorages, ud: ud) {
             savedAnchorages = v
         }
         anchorPiURL            = ud.string(forKey: Keys.anchorPiURL)            ?? ""
         anchorPiTailscaleURL   = ud.string(forKey: Keys.anchorPiTailscaleURL)   ?? ""
         anchorNtfyTopic        = ud.string(forKey: Keys.anchorNtfyTopic)        ?? ""
         anchorNtfyServer       = ud.string(forKey: Keys.anchorNtfyServer)       ?? "https://ntfy.sh"
-        if let d = ud.data(forKey: Keys.instrumentConfigs),
-           let v = try? JSONDecoder().decode([String: InstrumentConfig].self, from: d) {
+        if let v = Self.loadBlob([String: InstrumentConfig].self, key: Keys.instrumentConfigs, ud: ud) {
             instrumentConfigs = v
         }
         gpsCoordFormat         = ud.string(forKey: Keys.gpsCoordFormat) ?? "DDM"
@@ -282,12 +280,10 @@ final class AppSettings {
         let tm = ud.integer(forKey: Keys.chartTrailMinutes); chartTrailMinutes = tm > 0 ? tm : 60
         aisStreamAPIKey   = ud.string(forKey: Keys.aisStreamAPIKey) ?? ""
         let ar = ud.double(forKey: Keys.aisRangeNm); aisRangeNm = ar > 0 ? ar : 20
-        if let d = ud.data(forKey: Keys.chartDownloadedRegions),
-           let v = try? JSONDecoder().decode([ChartRegion].self, from: d) {
+        if let v = Self.loadBlob([ChartRegion].self, key: Keys.chartDownloadedRegions, ud: ud) {
             chartDownloadedRegions = v
         }
-        if let d = ud.data(forKey: Keys.aisFriends),
-           let v = try? JSONDecoder().decode([AISFriend].self, from: d) {
+        if let v = Self.loadBlob([AISFriend].self, key: Keys.aisFriends, ud: ud) {
             aisFriends = v
         }
         chartShowPredictor   = ud.object(forKey: Keys.chartShowPredictor)   as? Bool ?? true
@@ -301,8 +297,7 @@ final class AppSettings {
         let cpaM = ud.double(forKey: Keys.aisTCPAThresholdMin);   aisTCPAThresholdMin  = cpaM > 0 ? cpaM : 10
         aisGuardZoneEnabled  = ud.bool(forKey: Keys.aisGuardZoneEnabled)
         let gz = ud.double(forKey: Keys.aisGuardZoneRadiusNm);    aisGuardZoneRadiusNm = gz > 0 ? gz : 1.0
-        if let d = ud.data(forKey: Keys.activeRoute),
-           let r = try? JSONDecoder().decode(Route.self, from: d) {
+        if let r = Self.loadBlob(Route.self, key: Keys.activeRoute, ud: ud) {
             activeRoute = r
         }
         predictWindPiURL        = ud.string(forKey: Keys.predictWindPiURL) ?? ""
@@ -380,16 +375,10 @@ final class AppSettings {
         ud.set(anchorLowBatteryPct,   forKey: Keys.anchorLowBatteryPct)
         ud.set(anchorUseDeviceGPS,    forKey: Keys.anchorUseDeviceGPS)
         ud.set(anchorMooringType,     forKey: Keys.anchorMooringType)
-        if let d = try? JSONEncoder().encode(savedAnchorages) {
-            ud.set(d, forKey: Keys.savedAnchorages)
-        }
         ud.set(anchorPiURL,             forKey: Keys.anchorPiURL)
         ud.set(anchorPiTailscaleURL,    forKey: Keys.anchorPiTailscaleURL)
         ud.set(anchorNtfyTopic,         forKey: Keys.anchorNtfyTopic)
         ud.set(anchorNtfyServer,        forKey: Keys.anchorNtfyServer)
-        if let d = try? JSONEncoder().encode(instrumentConfigs) {
-            ud.set(d, forKey: Keys.instrumentConfigs)
-        }
         ud.set(gpsCoordFormat,          forKey: Keys.gpsCoordFormat)
         ud.set(mobActive,               forKey: Keys.mobActive)
         ud.set(mobLat,                  forKey: Keys.mobLat)
@@ -406,12 +395,6 @@ final class AppSettings {
         ud.set(chartTrailMinutes, forKey: Keys.chartTrailMinutes)
         ud.set(aisStreamAPIKey,   forKey: Keys.aisStreamAPIKey)
         ud.set(aisRangeNm,        forKey: Keys.aisRangeNm)
-        if let d = try? JSONEncoder().encode(chartDownloadedRegions) {
-            ud.set(d, forKey: Keys.chartDownloadedRegions)
-        }
-        if let d = try? JSONEncoder().encode(aisFriends) {
-            ud.set(d, forKey: Keys.aisFriends)
-        }
         ud.set(chartShowPredictor,   forKey: Keys.chartShowPredictor)
         ud.set(chartPredictorMin,    forKey: Keys.chartPredictorMin)
         ud.set(chartShowLaylines,    forKey: Keys.chartShowLaylines)
@@ -423,11 +406,6 @@ final class AppSettings {
         ud.set(aisTCPAThresholdMin,  forKey: Keys.aisTCPAThresholdMin)
         ud.set(aisGuardZoneEnabled,  forKey: Keys.aisGuardZoneEnabled)
         ud.set(aisGuardZoneRadiusNm, forKey: Keys.aisGuardZoneRadiusNm)
-        if let r = activeRoute, let d = try? JSONEncoder().encode(r) {
-            ud.set(d, forKey: Keys.activeRoute)
-        } else {
-            ud.removeObject(forKey: Keys.activeRoute)
-        }
         ud.set(predictWindPiURL,        forKey: Keys.predictWindPiURL)
         ud.set(chartShowPredictWindAIS, forKey: Keys.chartShowPredictWindAIS)
         ud.set(chartMode,               forKey: Keys.chartMode)
@@ -435,6 +413,59 @@ final class AppSettings {
         ud.set(forecastAlarmMaxWindKn,  forKey: Keys.forecastAlarmMaxWindKn)
         ud.set(forecastAlarmMaxWaveM,   forKey: Keys.forecastAlarmMaxWaveM)
         ud.set(forecastAlarmHoursAhead, forKey: Keys.forecastAlarmHoursAhead)
+        schedulePersistBlobs()
+    }
+
+    // MARK: - JSON-blob persistence (debounced, with backup copies)
+    //
+    // persist() fires from many view interactions, sometimes per drag tick.
+    // Scalars stay synchronous above (cheap; anchor state must survive a
+    // force-quit) — the five encoded arrays are coalesced here instead of
+    // being re-encoded on every call. Each blob is written twice: a crash
+    // mid-write must not silently erase saved anchorages/routes (the old
+    // try?-into-defaults load path did exactly that).
+
+    private var persistBlobsTask: Task<Void, Never>?
+
+    private func schedulePersistBlobs() {
+        persistBlobsTask?.cancel()
+        persistBlobsTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(400))
+            guard let self, !Task.isCancelled else { return }
+            self.persistBlobsNow()
+        }
+    }
+
+    private func persistBlobsNow() {
+        let ud = UserDefaults.standard
+        func write<T: Encodable>(_ value: T, _ key: String) {
+            guard let d = try? JSONEncoder().encode(value) else { return }
+            ud.set(d, forKey: key)
+            ud.set(d, forKey: key + ".bak")
+        }
+        write(savedAnchorages,        Keys.savedAnchorages)
+        write(instrumentConfigs,      Keys.instrumentConfigs)
+        write(chartDownloadedRegions, Keys.chartDownloadedRegions)
+        write(aisFriends,             Keys.aisFriends)
+        if let r = activeRoute {
+            write(r, Keys.activeRoute)
+        } else {
+            ud.removeObject(forKey: Keys.activeRoute)
+            ud.removeObject(forKey: Keys.activeRoute + ".bak")
+        }
+    }
+
+    /// Decode a JSON blob with backup fallback + loud logging on corruption.
+    private static func loadBlob<T: Decodable>(_ type: T.Type, key: String, ud: UserDefaults) -> T? {
+        if let d = ud.data(forKey: key), let v = try? JSONDecoder().decode(type, from: d) { return v }
+        if let d = ud.data(forKey: key + ".bak"), let v = try? JSONDecoder().decode(type, from: d) {
+            print("[Settings] \(key) unreadable — recovered from backup copy")
+            return v
+        }
+        if ud.data(forKey: key) != nil {
+            print("[Settings] \(key) corrupt with no usable backup — defaults in effect")
+        }
+        return nil
     }
 }
 

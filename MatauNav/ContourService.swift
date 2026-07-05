@@ -41,6 +41,13 @@ final class ContourService {
         // don't churn MKPolygon overlays on every pan inside one tile.
         if names == lastNames, let cached = lastResult { return cached }
         var out: [ContourPolygon] = []
+        // Evict parsed regions far from the viewport once we hold more than a
+        // handful — each is 10-50 MB and a season of sailing would otherwise
+        // pin every visited region in memory until app relaunch.
+        if cache.count > 6 {
+            let keep = Set(names)
+            for k in cache.keys where !keep.contains(k) { cache.removeValue(forKey: k) }
+        }
         for n in names {
             guard let meta = ensureManifest().first(where: { $0.name == n }) else { continue }
             if cache[n] == nil { cache[n] = parse(meta) }

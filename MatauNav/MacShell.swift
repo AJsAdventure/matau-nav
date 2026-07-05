@@ -110,8 +110,14 @@ struct SidebarStatusFooter: View {
     @Environment(SignalKService.self)     private var signalK
     @Environment(AppSettings.self)        private var settings
     @Environment(AnchorWatchService.self) private var anchorWatch
+    @Environment(PiStateService.self)     private var piState
+    @Environment(AnchorPiService.self)    private var piService
+    @Environment(PredictWindService.self) private var predictWind
 
     var body: some View {
+        let issues = SystemHealth.issues(signalK: signalK, piState: piState,
+                                         piService: piService, predictWind: predictWind,
+                                         settings: settings)
         VStack(alignment: .leading, spacing: 8) {
             Divider().overlay(Color.borderColor)
             HStack(spacing: 7) {
@@ -119,6 +125,18 @@ struct SidebarStatusFooter: View {
                 Text(signalK.state.label)
                     .font(.caption).foregroundStyle(Color.textSecondary).lineLimit(1)
                 Spacer(minLength: 0)
+            }
+            // Anything ELSE degraded shows here — a green SignalK chip used
+            // to hide a dead AIS/CPA feed or anchor daemon entirely.
+            ForEach(issues.filter { $0.id != "SignalK" }) { issue in
+                HStack(spacing: 7) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption2).foregroundStyle(Color.statusOrange)
+                    Text("\(issue.id): \(issue.detail)")
+                        .font(.caption2).foregroundStyle(Color.statusOrange)
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                    Spacer(minLength: 0)
+                }
             }
             if settings.anchorActive {
                 let ok = anchorWatch.activeAlarms.isEmpty

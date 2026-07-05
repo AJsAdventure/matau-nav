@@ -12,6 +12,7 @@
 		028C0EE7B444DAC57DDAFAB3 /* MatauNavApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87687852BA221EE2A77036EE /* MatauNavApp.swift */; };
 		0394EBF8DB60CCE8C1EBCA1B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E56E25F6117F2FABFD749F4 /* Theme.swift */; };
 		039A88D451A7B4CB301B88AB /* paros.geojson in Resources */ = {isa = PBXBuildFile; fileRef = FFD0C020A5E1B44C8E9FC367 /* paros.geojson */; };
+		06DFA93D80643E156AAD87CA /* AlarmSiren.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109C799CB0C8BFF23E71286A /* AlarmSiren.swift */; };
 		082EB9A4C28384120CBD220D /* InstrumentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A600307ACFD63D9A4DF2BCE /* InstrumentsView.swift */; };
 		0BBF4479D315097BBFE9A620 /* GarminWebSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415B68AD62B4E1E62244FF48 /* GarminWebSheet.swift */; };
 		0F306796188638226D305088 /* AnchorWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A3663C39C598474B790D9E /* AnchorWizard.swift */; };
@@ -33,6 +34,7 @@
 		28558968F016687C07681E1D /* SignalKService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0377797A662592CF18126 /* SignalKService.swift */; };
 		2E8EAC88BCEFDB4F64A5213A /* PointerCursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 609BF820C11DF38D977B1347 /* PointerCursor.swift */; };
 		3496C97C810291234E410CBB /* SignalKService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0377797A662592CF18126 /* SignalKService.swift */; };
+		381419A5902FC14F0953A33A /* AlarmSiren.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109C799CB0C8BFF23E71286A /* AlarmSiren.swift */; };
 		3B1CC7CF87D6A6D6E5B77903 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A022487F82D41FBB6D8989E7 /* Assets.xcassets */; };
 		3BBF84DFDC36E129867ED64B /* AnchorWatchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25422954786374F71977A5F /* AnchorWatchService.swift */; };
 		3C60BED7E0688FBCFA63AA4A /* cyclades_1_0.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 80DB19B942A7FAB327EC0AAF /* cyclades_1_0.geojson */; };
@@ -57,6 +59,7 @@
 		5DE671E5A990258FC818AE58 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873FD5CCAAB94036CA22A85F /* ShareSheet.swift */; };
 		5E80D8FC1C2311E0F78E2A76 /* TilePrefetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F87944F9C892B49FEBB0FF16 /* TilePrefetcher.swift */; };
 		606DF9543C08B9FC099FFF74 /* PhoneWatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B206BA53370B5D64BDDA9966 /* PhoneWatchBridge.swift */; };
+		60CCB9267595CF95D0315705 /* SystemHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BD9DA68BCB9A586D29EA9B /* SystemHealth.swift */; };
 		646E3172726E5C9AEC7D3DC2 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A32D246AD657DA047BC4E24 /* SetupView.swift */; };
 		6620CCD817F67BBFB065B173 /* AnchorForecastSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6807DE32E0CDF62B2CA2BB00 /* AnchorForecastSettingsView.swift */; };
 		6A4C39955AD25E780029CE79 /* AppActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF25FE979E5DF24CF670929 /* AppActivity.swift */; };
@@ -141,6 +144,7 @@
 		E0A408FDC2C8203256A72D08 /* SystemAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ACE13B5C86F140EEE644E52 /* SystemAudio.swift */; };
 		E3249B03A13F5B7E77047F0A /* ChartBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7690E30DA7C36C3BED77980A /* ChartBridge.swift */; };
 		E484B86D04751B9069996F19 /* AppMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41CED90AE4C869C61E819BF1 /* AppMonitor.swift */; };
+		E53F431BD9F5650C88D70AF2 /* SystemHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BD9DA68BCB9A586D29EA9B /* SystemHealth.swift */; };
 		E853E48484EDE69B7B4DB18F /* paros.geojson in Resources */ = {isa = PBXBuildFile; fileRef = FFD0C020A5E1B44C8E9FC367 /* paros.geojson */; };
 		EBBACEE0648C634CEAC7FA12 /* PlatformColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA48816DB2D0C18EEAC0442F /* PlatformColor+Hex.swift */; };
 		EC2B8BB31CCB3A96D00B172A /* cyclades_2_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 10FA2E66571B08B2B6B92520 /* cyclades_2_2.geojson */; };
@@ -190,9 +194,11 @@
 		0CD1D52C998B3D0161E9F07F /* saronic_2_0.geojson */ = {isa = PBXFileReference; path = saronic_2_0.geojson; sourceTree = "<group>"; };
 		0EDF101AE51B87ADE12C3AB5 /* MatauNavWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatauNavWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		104162BFF64FA97BE5CFC780 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		109C799CB0C8BFF23E71286A /* AlarmSiren.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSiren.swift; sourceTree = "<group>"; };
 		10FA2E66571B08B2B6B92520 /* cyclades_2_2.geojson */ = {isa = PBXFileReference; path = cyclades_2_2.geojson; sourceTree = "<group>"; };
 		1135C062B17F7B0EE3950E61 /* AutopilotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotView.swift; sourceTree = "<group>"; };
 		1C1861AE7D6F214DBACC3B70 /* saronic_0_1.geojson */ = {isa = PBXFileReference; path = saronic_0_1.geojson; sourceTree = "<group>"; };
+		20BD9DA68BCB9A586D29EA9B /* SystemHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemHealth.swift; sourceTree = "<group>"; };
 		2D11F288FA0A89BEDED00901 /* AnchorPiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorPiService.swift; sourceTree = "<group>"; };
 		2EE90BBABDA9905AA2084B52 /* ViewModifiers+Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModifiers+Platform.swift"; sourceTree = "<group>"; };
 		2F3E69D4672C9517F7055028 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-macOS.plist"; sourceTree = "<group>"; };
@@ -301,6 +307,7 @@
 				88D7BF8DB0605B909DD50C03 /* Platform */,
 				405E0015529E4657BB98CC93 /* AISService.swift */,
 				C4C6D5265327C73A830680D7 /* AlarmPlayer.swift */,
+				109C799CB0C8BFF23E71286A /* AlarmSiren.swift */,
 				58405ABA14FEE8661974F409 /* AnchorForecast.swift */,
 				6807DE32E0CDF62B2CA2BB00 /* AnchorForecastSettingsView.swift */,
 				2D11F288FA0A89BEDED00901 /* AnchorPiService.swift */,
@@ -338,6 +345,7 @@
 				873FD5CCAAB94036CA22A85F /* ShareSheet.swift */,
 				A20DF2F205A92C4217A05FC8 /* SignalKCredentials.swift */,
 				81F0377797A662592CF18126 /* SignalKService.swift */,
+				20BD9DA68BCB9A586D29EA9B /* SystemHealth.swift */,
 				4E56E25F6117F2FABFD749F4 /* Theme.swift */,
 				9385198A602324F3B291F0EB /* TileDownloader.swift */,
 				F87944F9C892B49FEBB0FF16 /* TilePrefetcher.swift */,
@@ -586,6 +594,7 @@
 			files = (
 				B29B55DCCF2389ADE88DE8A7 /* AISService.swift in Sources */,
 				D137C8A6FCC0C572C7DB58E6 /* AlarmPlayer.swift in Sources */,
+				381419A5902FC14F0953A33A /* AlarmSiren.swift in Sources */,
 				D5E91616B80509F5B07D0DD3 /* AnchorForecast.swift in Sources */,
 				6620CCD817F67BBFB065B173 /* AnchorForecastSettingsView.swift in Sources */,
 				DBCC068446662D60F9C28C50 /* AnchorPiService.swift in Sources */,
@@ -628,6 +637,7 @@
 				415DD89E53A7664B6AC731FE /* SignalKCredentials.swift in Sources */,
 				3496C97C810291234E410CBB /* SignalKService.swift in Sources */,
 				E0A408FDC2C8203256A72D08 /* SystemAudio.swift in Sources */,
+				60CCB9267595CF95D0315705 /* SystemHealth.swift in Sources */,
 				5A1791677BE3346C2CDF6276 /* Theme.swift in Sources */,
 				DAA0836C59846CE903C571D5 /* TileDownloader.swift in Sources */,
 				5E80D8FC1C2311E0F78E2A76 /* TilePrefetcher.swift in Sources */,
@@ -644,6 +654,7 @@
 			files = (
 				83A0E492158A29A28360C079 /* AISService.swift in Sources */,
 				B9C3C10A06E6C4494C2F9236 /* AlarmPlayer.swift in Sources */,
+				06DFA93D80643E156AAD87CA /* AlarmSiren.swift in Sources */,
 				1A98FE1823A578E34A92AEAB /* AnchorForecast.swift in Sources */,
 				3F37FC55DC5667E3A2A3927B /* AnchorForecastSettingsView.swift in Sources */,
 				140A8E83EEE1D41F955792DE /* AnchorPiService.swift in Sources */,
@@ -687,6 +698,7 @@
 				01C368105A02D24EE7FC167F /* SignalKCredentials.swift in Sources */,
 				28558968F016687C07681E1D /* SignalKService.swift in Sources */,
 				DAFFECD10F8139343EFA301A /* SystemAudio.swift in Sources */,
+				E53F431BD9F5650C88D70AF2 /* SystemHealth.swift in Sources */,
 				0394EBF8DB60CCE8C1EBCA1B /* Theme.swift in Sources */,
 				916ADCA80899D0ACE488AC07 /* TileDownloader.swift in Sources */,
 				9859B0816D9A564F8D40E529 /* TilePrefetcher.swift in Sources */,

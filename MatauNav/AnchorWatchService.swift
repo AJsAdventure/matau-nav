@@ -168,7 +168,7 @@ final class AnchorWatchService: NSObject {
         breachStart   = nil
         maxSwing      = 0
         liveDistance  = 0
-        if loudActive { AlarmPlayer.shared.stop(); loudActive = false }
+        if loudActive { AlarmSiren.shared.release("anchor-watch"); loudActive = false }
         // Release the sleep-prevention assertion (no-op on iOS).
         AppActivity.shared.endAnchorWatch()
     }
@@ -325,12 +325,13 @@ final class AnchorWatchService: NSObject {
         let snoozed = (snoozedUntil.map { Date() < $0 }) ?? false
         let wantLoud = !snoozed && !activeAlarms.isDisjoint(with: Self.loudAlarmTypes)
         if wantLoud {
-            // Self-healing: re-arm even if something else (e.g. a Pi-down alarm
-            // recovering) stopped the shared player while a drag is still live.
-            if !AlarmPlayer.shared.isPlaying { AlarmPlayer.shared.start() }
+            // Refcounted via AlarmSiren: a Pi-daemon alarm clearing can never
+            // silence a live drag alarm, and re-acquiring every ~2 s doubles
+            // as the self-heal after an audio-session interruption.
+            AlarmSiren.shared.acquire("anchor-watch")
             loudActive = true
         } else if loudActive {
-            AlarmPlayer.shared.stop()
+            AlarmSiren.shared.release("anchor-watch")
             loudActive = false
         }
     }
@@ -339,7 +340,7 @@ final class AnchorWatchService: NSObject {
         snoozedUntil = Date().addingTimeInterval(Double(minutes) * 60)
         activeAlarms = []
         breachStart  = nil
-        if loudActive { AlarmPlayer.shared.stop(); loudActive = false }
+        if loudActive { AlarmSiren.shared.release("anchor-watch"); loudActive = false }
     }
 
     func clearLog() { alarmLog = [] }
