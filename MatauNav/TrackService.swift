@@ -53,9 +53,17 @@ final class TrackService {
     // MARK: Persistence
 
     private func load() {
-        guard let data = try? Data(contentsOf: storeURL),
-              let arr  = try? JSONDecoder().decode([Track].self, from: data) else { return }
-        tracks = arr
+        // Decode off-main: this store grows to several MB (5.2 MB observed in
+        // the field) and a synchronous decode here stalled every app launch.
+        let url = storeURL
+        Task.detached(priority: .userInitiated) {
+            guard let data = try? Data(contentsOf: url),
+                  let arr  = try? JSONDecoder().decode([Track].self, from: data) else { return }
+            await MainActor.run {
+                // Don't clobber tracks the user created before the load landed.
+                if self.tracks.isEmpty { self.tracks = arr }
+            }
+        }
     }
 
     private func save() {

@@ -177,6 +177,12 @@ struct ChartView: View {
                 updateContourPolygons(for: r)
             }
         }
+        .onChange(of: contours.revision) { _, _ in
+            // A background contour parse finished — pull its polygons in.
+            if let r = zoomProxy.mapView?.region {
+                updateContourPolygons(for: r)
+            }
+        }
         .task {
             // Pull Pi-recorded GPS tracks on open, then again every 60 s so
             // newly-recorded points show up while sailing.

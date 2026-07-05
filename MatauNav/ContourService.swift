@@ -26,6 +26,12 @@ final class ContourService {
     /// Cached parsed regions, keyed by file basename (e.g. "paros").
     private var cache: [String: RegionData] = [:]
 
+    /// Bumped whenever a background parse lands — the chart observes this to
+    /// pull freshly-parsed polygons in without polling.
+    private(set) var revision = 0
+    /// Regions currently being parsed off-main (dedup guard).
+    private var parsing: Set<String> = []
+
     /// Discovered region files in the app bundle. Populated lazily on the
     /// first call to `polygonsFor`.
     private var manifest: [RegionMeta]?
@@ -48,14 +54,44 @@ final class ContourService {
             let keep = Set(names)
             for k in cache.keys where !keep.contains(k) { cache.removeValue(forKey: k) }
         }
+        var complete = true
         for n in names {
-            guard let meta = ensureManifest().first(where: { $0.name == n }) else { continue }
-            if cache[n] == nil { cache[n] = parse(meta) }
-            if let data = cache[n] { out.append(contentsOf: data.polygons) }
+            if let data = cache[n] { out.append(contentsOf: data.polygons); continue }
+            complete = false
+            if let meta = ensureManifest().first(where: { $0.name == n }) {
+                scheduleParse(meta)
+            }
         }
-        lastNames = names
-        lastResult = out
+        // Memoize only complete answers — a partial set must not become the
+        // cached result for this name set once the parses finish.
+        if complete {
+            lastNames = names
+            lastResult = out
+        } else {
+            lastNames = []
+            lastResult = nil
+        }
         return out
+    }
+
+    /// Parse a region file OFF the main actor. These files are 8-36 MB of
+    /// GeoJSON; parsing one synchronously inside polygonsFor (as this used
+    /// to) froze the UI for seconds on the first chart display of every
+    /// region — the single worst perceived-launch cost of the app.
+    private func scheduleParse(_ meta: RegionMeta) {
+        guard !parsing.contains(meta.name) else { return }
+        parsing.insert(meta.name)
+        Task.detached(priority: .userInitiated) { [weak self] in
+            let parsed = Self.parse(meta)
+            await MainActor.run {
+                guard let self else { return }
+                self.cache[meta.name] = parsed
+                self.parsing.remove(meta.name)
+                self.lastNames = []
+                self.lastResult = nil
+                self.revision += 1
+            }
+        }
     }
 
     private var lastNames: [String] = []
@@ -132,7 +168,7 @@ final class ContourService {
 
     // MARK: Parse
 
-    private func parse(_ meta: RegionMeta) -> RegionData {
+    nonisolated private static func parse(_ meta: RegionMeta) -> RegionData {
         guard let data = try? Data(contentsOf: meta.url),
               let any  = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let feats = any["features"] as? [[String: Any]] else {
@@ -172,7 +208,7 @@ final class ContourService {
         return RegionData(polygons: polys)
     }
 
-    private func makePolygon(rings: [[[Double]]],
+    nonisolated private static func makePolygon(rings: [[[Double]]],
                              band: ContourPolygon.Band) -> ContourPolygon {
         // First ring is the outer; rest are holes.
         let outer = rings.first?.compactMap { coord -> CLLocationCoordinate2D? in

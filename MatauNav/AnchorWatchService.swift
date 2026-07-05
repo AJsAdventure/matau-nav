@@ -563,15 +563,26 @@ final class AnchorWatchService: NSObject {
         let snapshot = track
         let url = trackURL
         Task.detached(priority: .utility) {
-            try? JSONEncoder().encode(snapshot).write(to: url)
+            // .atomic: a crash mid-write must leave the old file, not a stump
+            // the next launch silently fails to decode.
+            try? JSONEncoder().encode(snapshot).write(to: url, options: .atomic)
         }
     }
 
     private func loadTrack() {
-        guard let data = try? Data(contentsOf: trackURL),
-              let pts  = try? JSONDecoder().decode([TrackPoint].self, from: data) else { return }
-        let cutoff = Date().addingTimeInterval(-3 * 24 * 3600)
-        track = pts.filter { $0.time >= cutoff }
+        // Decode off-main (up to ~17k points after a long watch) so service
+        // creation never stalls app launch.
+        let url = trackURL
+        Task.detached(priority: .userInitiated) {
+            guard let data = try? Data(contentsOf: url),
+                  let pts  = try? JSONDecoder().decode([TrackPoint].self, from: data) else { return }
+            let cutoff = Date().addingTimeInterval(-3 * 24 * 3600)
+            let restored = pts.filter { $0.time >= cutoff }
+            await MainActor.run {
+                // Points recorded before the load landed are newer — keep both.
+                self.track = restored + self.track
+            }
+        }
     }
 }
 
