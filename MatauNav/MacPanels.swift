@@ -10,6 +10,8 @@
 
 #if os(macOS)
 import SwiftUI
+import MapKit
+import CoreLocation
 
 // MARK: - Shell state
 
@@ -30,8 +32,9 @@ final class MacShellState {
 
 // MARK: - Panel chrome
 
-/// Floating glass card that hosts a panel; collapses to a slim handle so the
-/// chart can take the full window when wanted.
+/// Full-height docked glass column hosting a panel. Runs all the way to the
+/// top of the window (under the transparent title bar); only the inner edge
+/// is rounded. Collapse is handled by the shell (round edge buttons).
 struct SidePanel<Content: View>: View {
     let title: String
     let symbol: String
@@ -39,24 +42,29 @@ struct SidePanel<Content: View>: View {
     @Binding var collapsed: Bool
     @ViewBuilder var content: () -> Content
 
+    private var innerCorners: RectangleCornerRadii {
+        edge == .leading
+            ? .init(topLeading: 0, bottomLeading: 0, bottomTrailing: 14, topTrailing: 14)
+            : .init(topLeading: 14, bottomLeading: 14, bottomTrailing: 0, topTrailing: 0)
+    }
+
     var body: some View {
-        Group {
-            if collapsed {
-                collapsedHandle
-            } else {
-                VStack(spacing: 0) {
-                    header
-                    content()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-                .frame(width: 372)
-                .background(panelBackground)
-            }
+        VStack(spacing: 0) {
+            header
+            content()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.vertical, 10)
-        .padding(edge == .leading ? .leading : .trailing, 10)
-        .animation(.spring(duration: 0.3), value: collapsed)
+        .frame(width: 372)
+        .frame(maxHeight: .infinity)
+        .background(
+            UnevenRoundedRectangle(cornerRadii: innerCorners, style: .continuous)
+                .fill(Color.bgPrimary.opacity(0.94))
+                .overlay(UnevenRoundedRectangle(cornerRadii: innerCorners, style: .continuous)
+                    .stroke(Color.borderColor, lineWidth: 1))
+                .shadow(color: .black.opacity(0.35), radius: 14, y: 0)
+        )
+        .clipShape(UnevenRoundedRectangle(cornerRadii: innerCorners, style: .continuous))
+        .ignoresSafeArea(edges: .top)
     }
 
     private var header: some View {
@@ -73,12 +81,14 @@ struct SidePanel<Content: View>: View {
             if edge == .leading { collapseButton }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        // The left column sits under the traffic lights — clear them.
+        .padding(.top, edge == .leading ? 34 : 12)
+        .padding(.bottom, 8)
     }
 
     private var collapseButton: some View {
         Button {
-            collapsed = true
+            withAnimation(.spring(duration: 0.3)) { collapsed = true }
         } label: {
             Image(systemName: edge == .leading ? "chevron.left.2" : "chevron.right.2")
                 .font(.caption.weight(.bold))
@@ -88,34 +98,137 @@ struct SidePanel<Content: View>: View {
         .pointerCursor()
         .help("Collapse panel")
     }
+}
 
-    private var collapsedHandle: some View {
-        Button {
-            collapsed = false
-        } label: {
-            VStack(spacing: 10) {
-                Image(systemName: edge == .leading ? "chevron.right.2" : "chevron.left.2")
-                    .font(.caption.weight(.bold))
-                Image(systemName: symbol)
-                    .font(.footnote)
-            }
-            .foregroundStyle(Color.textSecondary)
-            .frame(width: 26)
-            .frame(maxHeight: .infinity)
-            .background(panelBackground)
-            .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+/// Round edge button shown at the vertical centre of the window edge while a
+/// panel is collapsed — click to bring the panel back.
+struct PanelToggleFAB<Icon: View>: View {
+    let edge: HorizontalEdge
+    let help: String
+    let action: () -> Void
+    @ViewBuilder var icon: () -> Icon
+
+    var body: some View {
+        Button(action: action) {
+            icon()
+                .foregroundStyle(Color.textPrimary)
+                .frame(width: 46, height: 46)
+                .background(Color.bgPrimary.opacity(0.9), in: Circle())
+                .overlay(Circle().stroke(Color.borderColor, lineWidth: 1))
+                .shadow(color: .black.opacity(0.35), radius: 10, y: 2)
         }
         .buttonStyle(.plain)
         .pointerCursor()
-        .help("Expand \(title)")
+        .help(help)
+        .padding(edge == .leading ? .leading : .trailing, 12)
+    }
+}
+
+// MARK: - Window top bar: MOB + Sail⇄Anchor switch
+//
+// Lives as a window-level overlay so it stays dead-centre no matter which
+// panels are expanded (safe-area insets would drift a chart-hosted switch).
+
+struct MacTopBar: View {
+    @Environment(AppSettings.self)    private var settings
+    @Environment(SignalKService.self) private var signalK
+    @Environment(PiStateService.self) private var piState
+    @Environment(ChartBridge.self)    private var chartBridge
+    @State private var confirmClearMOB = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            mobButton
+            modeSwitch
+        }
+        .padding(.top, 10)
     }
 
-    private var panelBackground: some View {
-        RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .fill(Color.bgPrimary.opacity(0.92))
-            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.borderColor, lineWidth: 1))
-            .shadow(color: .black.opacity(0.35), radius: 14, y: 4)
+    // MARK: MOB — instant to SET (an emergency button must not ask
+    // questions), confirmed to CLEAR (clearing by accident loses the spot).
+    private var mobButton: some View {
+        Button {
+            if settings.mobActive {
+                confirmClearMOB = true
+            } else {
+                let lat = signalK.latitude, lon = signalK.longitude
+                guard lat != 0 || lon != 0 else { return }
+                Task { await piState.setMOB(lat: lat, lon: lon) }
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "figure.fall")
+                    .font(.system(size: 14, weight: .bold))
+                Text("MOB").font(.system(size: 13, weight: .heavy)).tracking(0.5)
+            }
+            .foregroundStyle(settings.mobActive ? Color.black : Color.white)
+            .padding(.horizontal, 12)
+            .frame(height: 32)
+            .background(settings.mobActive ? Color.statusRed : Color.statusRed.opacity(0.55),
+                        in: Capsule())
+            .overlay(Capsule().stroke(Color.statusRed, lineWidth: 1))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .pointerCursor()
+        .help(settings.mobActive ? "Clear man-overboard mark" : "Mark man overboard at current position")
+        .confirmationDialog("Clear the man-overboard mark?",
+                            isPresented: $confirmClearMOB, titleVisibility: .visible) {
+            Button("Clear MOB", role: .destructive) { Task { await piState.clearMOB() } }
+            Button("Keep", role: .cancel) {}
+        }
+    }
+
+    // MARK: Sail ⇄ Anchor (same behaviour as ChartView's own toggle,
+    // including the map refocus on entering anchor mode via ChartBridge)
+    private var modeSwitch: some View {
+        HStack(spacing: 3) {
+            segment(mode: "sail",   label: "Sail",   tint: .accentCyan, anchorGlyph: false)
+            segment(mode: "anchor", label: "Anchor", tint: .statusOrange, anchorGlyph: true)
+        }
+        .padding(4)
+        .glassBackground(active: false, in: Capsule())
+        .overlay(Capsule().stroke(.white.opacity(0.25), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.3), radius: 4, y: 1)
+    }
+
+    private func segment(mode: String, label: String, tint: Color, anchorGlyph: Bool) -> some View {
+        let on = settings.chartMode == mode
+        return Button { setChartMode(mode) } label: {
+            HStack(spacing: 5) {
+                if anchorGlyph {
+                    AnchorMark().frame(width: 15, height: 15)
+                } else {
+                    Image(systemName: "sailboat.fill").font(.system(size: 14, weight: .bold))
+                }
+                Text(label).font(.system(size: 13, weight: .bold)).fixedSize()
+            }
+            .foregroundStyle(on ? Color.black : Color.white)
+            .padding(.horizontal, 12)
+            .frame(height: 32)
+            .background(on ? tint : Color.clear, in: Capsule())
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .pointerCursor()
+    }
+
+    private func setChartMode(_ mode: String) {
+        guard settings.chartMode != mode else { return }
+        withAnimation(.spring(duration: 0.3)) {
+            settings.chartMode = mode
+            settings.persist()
+        }
+        if mode == "anchor" {
+            let center = settings.anchorActive
+                ? CLLocationCoordinate2D(latitude: settings.anchorLat, longitude: settings.anchorLon)
+                : CLLocationCoordinate2D(latitude: signalK.latitude, longitude: signalK.longitude)
+            if center.latitude != 0 || center.longitude != 0 {
+                let span = MKCoordinateSpan(latitudeDelta: 0.004, longitudeDelta: 0.004)
+                chartBridge.zoomProxy?.mapView?.setRegion(.init(center: center, span: span),
+                                                          animated: true)
+            }
+        }
     }
 }
 

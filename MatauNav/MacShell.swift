@@ -45,24 +45,55 @@ struct MacRootView: View {
         ChartView()
             .environment(\.macPanelShell, true)
             .safeAreaInset(edge: .leading, spacing: 0) {
-                SidePanel(title: settings.isAnchorMode ? "Anchor" : "Autopilot",
-                          symbol: settings.isAnchorMode ? "circle.dashed" : "safari.fill",
-                          edge: .leading,
-                          collapsed: $shell.leftCollapsed) {
-                    if settings.isAnchorMode {
-                        AnchorSidePanel()
-                    } else {
-                        AutopilotView()
+                if !shell.leftCollapsed {
+                    SidePanel(title: settings.isAnchorMode ? "Anchor" : "Autopilot",
+                              symbol: settings.isAnchorMode ? "circle.dashed" : "safari.fill",
+                              edge: .leading,
+                              collapsed: $shell.leftCollapsed) {
+                        if settings.isAnchorMode {
+                            AnchorSidePanel()
+                        } else {
+                            AutopilotView()
+                        }
                     }
                 }
             }
             .safeAreaInset(edge: .trailing, spacing: 0) {
-                SidePanel(title: "Instruments",
-                          symbol: "gauge.medium",
-                          edge: .trailing,
-                          collapsed: $shell.rightCollapsed) {
-                    InstrumentsView()
+                if !shell.rightCollapsed {
+                    SidePanel(title: "Instruments",
+                              symbol: "gauge.medium",
+                              edge: .trailing,
+                              collapsed: $shell.rightCollapsed) {
+                        InstrumentsView()
+                    }
                 }
+            }
+            .overlay(alignment: .leading) {
+                if shell.leftCollapsed {
+                    PanelToggleFAB(edge: .leading,
+                                   help: settings.isAnchorMode ? "Show anchor panel" : "Show autopilot") {
+                        withAnimation(.spring(duration: 0.3)) { shell.leftCollapsed = false }
+                    } icon: {
+                        if settings.isAnchorMode {
+                            AnchorMark().frame(width: 18, height: 18)
+                        } else {
+                            Image(systemName: "safari.fill").font(.system(size: 17, weight: .semibold))
+                        }
+                    }
+                }
+            }
+            .overlay(alignment: .trailing) {
+                if shell.rightCollapsed {
+                    PanelToggleFAB(edge: .trailing, help: "Show instruments") {
+                        withAnimation(.spring(duration: 0.3)) { shell.rightCollapsed = false }
+                    } icon: {
+                        Image(systemName: "gauge.medium").font(.system(size: 17, weight: .semibold))
+                    }
+                }
+            }
+            .overlay(alignment: .top) {
+                // Window-level so it stays dead-centre regardless of panels.
+                MacTopBar()
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 8) {

@@ -239,8 +239,10 @@ struct ChartView: View {
                     sailTopChips
                 }
             }
-            // Mode switch, absolutely centred at the top.
-            modeToggle
+            // Mode switch, absolutely centred at the top. The macOS panel
+            // shell renders its own window-centred switch instead (panels
+            // shift this view's safe area, so centring here would drift).
+            if !macPanelShell { modeToggle }
         }
     }
 
