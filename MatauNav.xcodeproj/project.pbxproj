@@ -55,6 +55,7 @@
 		56591B399792DC305058D141 /* WindRibbon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9464B6F72A8A48C1B1D1D62 /* WindRibbon.swift */; };
 		5A1791677BE3346C2CDF6276 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E56E25F6117F2FABFD749F4 /* Theme.swift */; };
 		5A4C8C9828C31F4443BF5D8B /* cyclades_2_2.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 10FA2E66571B08B2B6B92520 /* cyclades_2_2.geojson */; };
+		5C6BEF64A3551CDEEF858706 /* MacPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F3D0FA8B2F4393D1D6A81D /* MacPanels.swift */; };
 		5D2A9A57D6D97E2577B4AD07 /* InstrumentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A600307ACFD63D9A4DF2BCE /* InstrumentsView.swift */; };
 		5DE671E5A990258FC818AE58 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873FD5CCAAB94036CA22A85F /* ShareSheet.swift */; };
 		5E80D8FC1C2311E0F78E2A76 /* TilePrefetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F87944F9C892B49FEBB0FF16 /* TilePrefetcher.swift */; };
@@ -127,6 +128,7 @@
 		CC380BDE8D6C5843AFD7C3D8 /* cyclades_1_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 964AD99E44D200C873174D6C /* cyclades_1_1.geojson */; };
 		CD327AA9EFFEB6F57D1FBACF /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 593D953B6824224C2737411D /* Haptics.swift */; };
 		CEDBBEA0904EA5A7DE0AB9A6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C1E303E5444D3EFAF53C27 /* ContentView.swift */; };
+		CF1EAAE5BCE1143DE58E2853 /* MacPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F3D0FA8B2F4393D1D6A81D /* MacPanels.swift */; };
 		D057784C9D8C18D44B3E852D /* ChartMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C495ED1CB57E68287B1EBF88 /* ChartMapView.swift */; };
 		D137C8A6FCC0C572C7DB58E6 /* AlarmPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4C6D5265327C73A830680D7 /* AlarmPlayer.swift */; };
 		D5E91616B80509F5B07D0DD3 /* AnchorForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58405ABA14FEE8661974F409 /* AnchorForecast.swift */; };
@@ -203,6 +205,7 @@
 		2EE90BBABDA9905AA2084B52 /* ViewModifiers+Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModifiers+Platform.swift"; sourceTree = "<group>"; };
 		2F3E69D4672C9517F7055028 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		34A5D09AB8252DE87ADE88EC /* PredictWindKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredictWindKeychain.swift; sourceTree = "<group>"; };
+		39F3D0FA8B2F4393D1D6A81D /* MacPanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPanels.swift; sourceTree = "<group>"; };
 		3BB5D4C12D7DD6379078DC52 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		3C8E7EBEE6D7F43A1A979BC8 /* messinia_1_0.geojson */ = {isa = PBXFileReference; path = messinia_1_0.geojson; sourceTree = "<group>"; };
 		405E0015529E4657BB98CC93 /* AISService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISService.swift; sourceTree = "<group>"; };
@@ -331,6 +334,7 @@
 				6E06F4E8264F2591C57E8B1D /* Info.plist */,
 				69CB91775AA2BAD0353001F3 /* Instrument.swift */,
 				9A600307ACFD63D9A4DF2BCE /* InstrumentsView.swift */,
+				39F3D0FA8B2F4393D1D6A81D /* MacPanels.swift */,
 				D4C9751959B3241E8C219B65 /* MacShell.swift */,
 				87687852BA221EE2A77036EE /* MatauNavApp.swift */,
 				59F64E9DABE1045893E5B62E /* NavMath.swift */,
@@ -618,6 +622,7 @@
 				CD327AA9EFFEB6F57D1FBACF /* Haptics.swift in Sources */,
 				1727897BCE9790FE99C2C8D2 /* Instrument.swift in Sources */,
 				5D2A9A57D6D97E2577B4AD07 /* InstrumentsView.swift in Sources */,
+				5C6BEF64A3551CDEEF858706 /* MacPanels.swift in Sources */,
 				7A24E9B6F66ED67090FB97D2 /* MacShell.swift in Sources */,
 				028C0EE7B444DAC57DDAFAB3 /* MatauNavApp.swift in Sources */,
 				1275475E068B9CD79AA9671A /* NavMath.swift in Sources */,
@@ -678,6 +683,7 @@
 				11016CA92AB753C0F742EB79 /* Haptics.swift in Sources */,
 				DB3D804DEF6617D98808A1C9 /* Instrument.swift in Sources */,
 				082EB9A4C28384120CBD220D /* InstrumentsView.swift in Sources */,
+				CF1EAAE5BCE1143DE58E2853 /* MacPanels.swift in Sources */,
 				B415930A724A6291F51B788B /* MacShell.swift in Sources */,
 				C0B8F3437712E52035A81D37 /* MatauNavApp.swift in Sources */,
 				F072DE25EA0B000C7752D9AE /* NavMath.swift in Sources */,

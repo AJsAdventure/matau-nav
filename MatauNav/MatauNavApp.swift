@@ -7,7 +7,7 @@ struct MatauNavApp: App {
     @State private var monitor = AppMonitor()
 
     #if os(macOS)
-    @State private var router = AppRouter()
+    @State private var shell = MacShellState()
     @State private var chartBridge = ChartBridge()
     @NSApplicationDelegateAdaptor(MatauAppDelegate.self) private var appDelegate
     #endif
@@ -20,7 +20,7 @@ struct MatauNavApp: App {
         .defaultSize(width: 1280, height: 820)
         .windowResizability(.contentMinSize)
         .windowStyle(.hiddenTitleBar)        // edge-to-edge chart; unified dark chrome
-        .commands { MatauCommands(router: router, monitor: monitor, chartBridge: chartBridge) }
+        .commands { MatauCommands(shell: shell, monitor: monitor, chartBridge: chartBridge) }
 
         // Menu-bar agent: a live "glance" panel with boat status + actions. Stays
         // present after the main window closes, keeping the process (and the
@@ -55,7 +55,7 @@ struct MatauNavApp: App {
             .environment(monitor.contours)
             .environment(monitor.predictWind)
             #if os(macOS)
-            .environment(router)
+            .environment(shell)
             .environment(chartBridge)
             #endif
             .preferredColorScheme(.dark)

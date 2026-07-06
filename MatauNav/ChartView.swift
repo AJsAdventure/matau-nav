@@ -27,6 +27,7 @@ struct ChartView: View {
     @Environment(PiStateService.self)     private var piState
     @Environment(TrackService.self)       private var tracks
     @Environment(BathymetryService.self)  private var bathymetry
+    @Environment(\.macPanelShell) private var macPanelShell
     @Environment(ContourService.self)     private var contours
     @Environment(PredictWindService.self) private var predictWind
     @Environment(AnchorWatchService.self) private var anchorWatch
@@ -367,7 +368,9 @@ struct ChartView: View {
             if let pd = probedDepth, let pc = probedDepthCoord {
                 probedDepthChip(depth: pd, coord: pc)
             }
-            if settings.isAnchorMode { anchorConsole }
+            // The macOS panel shell shows the anchor console in its left
+            // panel — don't render it twice.
+            if settings.isAnchorMode && !macPanelShell { anchorConsole }
             if !settings.isAnchorMode, let route = settings.activeRoute, let leg = route.activeWaypoint {
                 routeProgressBar(route: route, leg: leg)
             }

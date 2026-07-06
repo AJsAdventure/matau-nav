@@ -8,44 +8,6 @@
 import SwiftUI
 import AppKit
 
-// MARK: - Sections
-
-enum AppSection: String, CaseIterable, Identifiable {
-    case autopilot   = "Autopilot"
-    case chart       = "Chart"
-    case instruments = "Instruments"
-    case setup       = "Setup"
-
-    var id: String { rawValue }
-    var symbol: String {
-        switch self {
-        case .autopilot:   "safari.fill"
-        case .chart:       "map.fill"
-        case .instruments: "gauge.medium"
-        case .setup:       "gearshape.fill"
-        }
-    }
-    var shortcut: KeyEquivalent {
-        switch self {
-        case .autopilot:   "1"
-        case .chart:       "2"
-        case .instruments: "3"
-        case .setup:       "4"
-        }
-    }
-}
-
-@Observable @MainActor
-final class AppRouter {
-    var section: AppSection {
-        didSet { UserDefaults.standard.set(section.rawValue, forKey: "macSection") }
-    }
-    init() {
-        section = AppSection(rawValue: UserDefaults.standard.string(forKey: "macSection") ?? "")
-            ?? .chart
-    }
-}
-
 // MARK: - Window chrome
 //
 // Unify the window with the app's dark identity: a navy background behind the
@@ -66,93 +28,80 @@ struct WindowConfigurator: NSViewRepresentable {
     func updateNSView(_ nsView: NSView, context: Context) {}
 }
 
-// MARK: - Sidebar root
+// MARK: - Chart-centric root
+//
+// ONE space: the chart fills the window; the left panel is Autopilot (sail
+// mode) or the anchor console (anchor mode); the right panel is Instruments.
+// Panels are floating glass cards implemented as safe-area insets, so the
+// chart's own chrome (top bar, rails, readouts) automatically avoids them
+// while the map itself runs edge-to-edge underneath.
 
 struct MacRootView: View {
-    @Environment(AppRouter.self) private var router
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @Environment(AppSettings.self)   private var settings
+    @Environment(MacShellState.self) private var shell
 
     var body: some View {
-        @Bindable var router = router
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            List(selection: Binding(
-                get: { router.section },
-                set: { if let s = $0 { router.section = s } }
-            )) {
-                ForEach(AppSection.allCases) { section in
-                    Label(section.rawValue, systemImage: section.symbol)
-                        .tag(section)
-                        .pointerCursor()
+        @Bindable var shell = shell
+        ChartView()
+            .environment(\.macPanelShell, true)
+            .safeAreaInset(edge: .leading, spacing: 0) {
+                SidePanel(title: settings.isAnchorMode ? "Anchor" : "Autopilot",
+                          symbol: settings.isAnchorMode ? "circle.dashed" : "safari.fill",
+                          edge: .leading,
+                          collapsed: $shell.leftCollapsed) {
+                    if settings.isAnchorMode {
+                        AnchorSidePanel()
+                    } else {
+                        AutopilotView()
+                    }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 260)
-            .listStyle(.sidebar)
-            .scrollContentBackground(.hidden)   // show the navy window bg, not wallpaper
-            .safeAreaInset(edge: .bottom) { SidebarStatusFooter() }
-        } detail: {
-            Group {
-                switch router.section {
-                case .autopilot:   AutopilotView()
-                case .chart:       ChartView()
-                case .instruments: InstrumentsView()
-                case .setup:       SetupView()
+            .safeAreaInset(edge: .trailing, spacing: 0) {
+                SidePanel(title: "Instruments",
+                          symbol: "gauge.medium",
+                          edge: .trailing,
+                          collapsed: $shell.rightCollapsed) {
+                    InstrumentsView()
                 }
             }
-            .frame(minWidth: 640, minHeight: 480)
-        }
-        .background(WindowConfigurator())
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 8) {
+                    MacStatusStrip()
+                    SettingsFAB()
+                }
+                .padding(.leading, 14)
+                .padding(.bottom, 14)
+            }
+            .sheet(isPresented: $shell.showSettings) {
+                MacSettingsSheet()
+            }
+            .frame(minWidth: 980, minHeight: 620)
+            .background(Color.bgPrimary)
+            .background(WindowConfigurator())
     }
 }
 
-/// At-a-glance boat status pinned to the bottom of the sidebar: SignalK
-/// connection + (when anchored) the watch state. Keeps the sparse sidebar useful.
-struct SidebarStatusFooter: View {
-    @Environment(SignalKService.self)     private var signalK
-    @Environment(AppSettings.self)        private var settings
-    @Environment(AnchorWatchService.self) private var anchorWatch
-    @Environment(PiStateService.self)     private var piState
-    @Environment(AnchorPiService.self)    private var piService
-    @Environment(PredictWindService.self) private var predictWind
+/// SetupView wrapped for sheet presentation with an explicit Done control —
+/// macOS sheets need a simple titled button, and Esc must always work.
+struct MacSettingsSheet: View {
+    @Environment(MacShellState.self) private var shell
 
     var body: some View {
-        let issues = SystemHealth.issues(signalK: signalK, piState: piState,
-                                         piService: piService, predictWind: predictWind,
-                                         settings: settings)
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Setup").font(.headline).foregroundStyle(Color.textPrimary)
+                Spacer()
+                Button("Done") { shell.showSettings = false }
+                    .keyboardShortcut(.cancelAction)
+                    .pointerCursor()
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background(Color.bgPrimary)
             Divider().overlay(Color.borderColor)
-            HStack(spacing: 7) {
-                Circle().fill(signalK.state.color).frame(width: 7, height: 7)
-                Text(signalK.state.label)
-                    .font(.caption).foregroundStyle(Color.textSecondary).lineLimit(1)
-                Spacer(minLength: 0)
-            }
-            // Anything ELSE degraded shows here — a green SignalK chip used
-            // to hide a dead AIS/CPA feed or anchor daemon entirely.
-            ForEach(issues.filter { $0.id != "SignalK" }) { issue in
-                HStack(spacing: 7) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.caption2).foregroundStyle(Color.statusOrange)
-                    Text("\(issue.id): \(issue.detail)")
-                        .font(.caption2).foregroundStyle(Color.statusOrange)
-                        .lineLimit(1).minimumScaleFactor(0.8)
-                    Spacer(minLength: 0)
-                }
-            }
-            if settings.anchorActive {
-                let ok = anchorWatch.activeAlarms.isEmpty
-                HStack(spacing: 7) {
-                    Image(systemName: ok ? "checkmark.shield.fill" : "exclamationmark.triangle.fill")
-                        .font(.caption).foregroundStyle(ok ? Color.statusGreen : Color.statusRed)
-                    Text(ok ? String(format: "Anchor · %.0f m", anchorWatch.liveDistance) : "Anchor alarm")
-                        .font(.caption)
-                        .foregroundStyle(ok ? Color.textSecondary : Color.statusRed)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                }
-            }
+            SetupView()
         }
-        .padding(.horizontal, 14)
-        .padding(.bottom, 12)
+        .frame(width: 740, height: 660)
+        .preferredColorScheme(.dark)
     }
 }
 
@@ -302,7 +251,7 @@ struct MenuBarContentView: View {
 // MARK: - Menu bar commands
 
 struct MatauCommands: Commands {
-    let router:  AppRouter
+    let shell:   MacShellState
     let monitor: AppMonitor
     let chartBridge: ChartBridge
 
@@ -322,11 +271,20 @@ struct MatauCommands: Commands {
             .keyboardShortcut("f", modifiers: [.command, .shift])
         }
 
-        CommandMenu("Go") {
-            ForEach(AppSection.allCases) { section in
-                Button(section.rawValue) { router.section = section }
-                    .keyboardShortcut(section.shortcut, modifiers: .command)
+        CommandGroup(replacing: .appSettings) {
+            Button("Settings…") { shell.showSettings = true }
+                .keyboardShortcut(",", modifiers: .command)
+        }
+
+        CommandMenu("Panels") {
+            Button(shell.leftCollapsed ? "Show Left Panel" : "Hide Left Panel") {
+                shell.leftCollapsed.toggle()
             }
+            .keyboardShortcut("1", modifiers: .command)
+            Button(shell.rightCollapsed ? "Show Instruments" : "Hide Instruments") {
+                shell.rightCollapsed.toggle()
+            }
+            .keyboardShortcut("2", modifiers: .command)
         }
 
         CommandMenu("Anchor") {

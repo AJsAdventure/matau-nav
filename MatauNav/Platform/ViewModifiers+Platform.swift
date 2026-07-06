@@ -60,3 +60,21 @@ extension ToolbarItemPlacement {
 }
 
 #endif
+
+
+// MARK: - macOS panel-shell flag
+//
+// True when the macOS chart-centric shell hosts the anchor console in its own
+// side panel — ChartView then suppresses its built-in bottom console so the
+// same information isn't shown twice. Defined unconditionally (harmless
+// default on iOS) so shared code can read it without #if.
+private struct MacPanelShellKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var macPanelShell: Bool {
+        get { self[MacPanelShellKey.self] }
+        set { self[MacPanelShellKey.self] = newValue }
+    }
+}
