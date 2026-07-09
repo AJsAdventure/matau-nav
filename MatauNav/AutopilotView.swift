@@ -373,6 +373,36 @@ struct AutopilotView: View {
             }
             .padding(.horizontal, 12)
 
+            // Row 3.5: vane reset — the remote equivalent of pressing
+            // Standby+Auto together on the ST8002. Acknowledges the pilot's
+            // own WINDSHIFT alarm and re-trims the vane to the current wind,
+            // so nobody has to physically walk to the helm unit.
+            if displayedMode == .wind && signalK.autopilotEngaged {
+                Button {
+                    Task { await resetVane() }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "wind.circle")
+                            .font(.system(size: 15, weight: .bold))
+                        Text("RESET VANE")
+                            .font(.system(size: 12, weight: .bold)).tracking(0.6)
+                    }
+                    .foregroundStyle(Color.statusOrange)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 40)
+                    .background(Color.statusOrange.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.statusOrange.opacity(0.4), lineWidth: 1))
+                    .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .disabled(apCommandPending)
+                .pointerCursor()
+                .help("Acknowledge WINDSHIFT and re-trim the vane (same as pressing Standby+Auto on the pilot)")
+                .padding(.horizontal, 12)
+            }
+
             // Row 4: Pi connection status + error
             HStack(spacing: 6) {
                 Circle()
@@ -464,6 +494,30 @@ struct AutopilotView: View {
                 : settings.anchorPiURL.isEmpty
                     ? "Pi URL not set — go to Setup → Pi Alarm Daemon"
                     : "Command failed — Pi may be busy"
+            }
+            try? await Task.sleep(for: .seconds(4))
+            withAnimation { apErrorMessage = nil }
+        }
+    }
+
+    /// Sends the Standby+Auto key combo (SeaTalk keycode 0x23) straight to the
+    /// daemon — the physical gesture that acknowledges the ST8002's WINDSHIFT
+    /// alarm and restarts wind-vane steering on the current wind. Goes via the
+    /// daemon directly (not the state broker) so it works regardless of the
+    /// broker's allowed-command list.
+    @MainActor
+    private func resetVane() async {
+        apCommandPending = true
+        apErrorMessage   = nil
+        defer { apCommandPending = false }
+        let ok = await piService.sendAutopilotCommand("wind_mode", settings: settings)
+        if ok {
+            // The pilot re-trims to the wind it sees NOW — mirror that locally.
+            withAnimation { lockedWindAngle = signalK.apparentWindAngle }
+        } else {
+            withAnimation { apErrorMessage = piService.connectionState == .disconnected
+                ? "Pi unreachable — check Setup"
+                : "Vane reset failed — Pi may be busy"
             }
             try? await Task.sleep(for: .seconds(4))
             withAnimation { apErrorMessage = nil }
