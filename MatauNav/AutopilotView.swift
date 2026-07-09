@@ -105,7 +105,9 @@ struct AutopilotView: View {
 
     private func syncLocalModeFromPi() {
         switch piState.autopilotMode {
-        case "wind":     autopilotMode = .wind
+        case "wind":
+            autopilotMode = .wind
+            if lockedWindAngle == nil { lockedWindAngle = signalK.apparentWindAngle }
         case "compass":  autopilotMode = .compass
         case "waypoint": autopilotMode = .waypoint
         default:         break    // standby — keep user's pending pick
@@ -185,7 +187,11 @@ struct AutopilotView: View {
     /// Returns (display text, portCorrecting, starboardCorrecting)
     private var targetHeadingInfo: (text: String, port: Bool, stbd: Bool) {
         let threshold = 2.0
-        if displayedMode == .wind, let locked = lockedWindAngle {
+        if displayedMode == .wind {
+            // Locked angle is known when this app commanded wind mode; when the
+            // pilot was engaged at the physical unit we estimate with the
+            // current apparent wind (the vane holds whatever it saw at engage).
+            let locked = lockedWindAngle ?? signalK.apparentWindAngle
             let diff = locked - signalK.apparentWindAngle
             let text = "\(String(format: "%.0f°", abs(locked)))\(locked >= 0 ? "S" : "P")"
             return (text, diff < -threshold, diff > threshold)
@@ -574,8 +580,8 @@ private struct WindRose: View {
                 drawBoatAndRudder(ctx: &c, size: size, rudderAngle: rud)
             }
 
-            // 6. Centre heading pill
-            Text(String(format: "%03.0f°", heading))
+            // 6. Centre heading pill — the boat's magnetic compass, always.
+            Text(String(format: "%03.0f°M", heading))
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
                 .foregroundStyle(Color.textPrimary)
                 .contentTransition(.numericText())
