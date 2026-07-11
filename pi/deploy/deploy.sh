@@ -17,6 +17,9 @@ cd "$(dirname "$0")"
 STAMP=$(date +%Y%m%d-%H%M%S)
 
 echo "== 1/6 backups =="
+# /opt/matau is root-owned; pi can overwrite existing files but not create
+# new ones (backups, .git). Own the dir once — files are pi-owned already.
+ssh matau "sudo chown pi:pi /opt/matau"
 ssh matau "cp /opt/matau/state_server.py /opt/matau/state_server.py.bak.$STAMP && \
            cp /opt/matau/predictwind_server.py /opt/matau/predictwind_server.py.bak.$STAMP && \
            cp /home/pi/predictwind_server.py /home/pi/predictwind_server.py.bak.$STAMP && \
@@ -32,7 +35,7 @@ scp -q matau-gps-watchdog.service matau-gps-watchdog.timer matau-wifi-powersave.
        matau-gpsclock.service matau-gpsclock.timer 10-matau-watchdog.conf matau:/tmp/
 
 echo "== 3/6 compile check on Pi (aborts before any restart if broken) =="
-ssh matau "python3 -m py_compile /opt/matau/state_server.py /opt/matau/predictwind_server.py /opt/matau/track_server.py /tmp/matau_gps_watchdog.py /tmp/matau_gpsclock.py && echo compile-ok"
+ssh matau "PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m py_compile /opt/matau/state_server.py /opt/matau/predictwind_server.py /opt/matau/track_server.py /tmp/matau_gps_watchdog.py /tmp/matau_gpsclock.py && echo compile-ok"
 
 echo "== 4/6 install watchdog + wifi units =="
 ssh matau "sudo install -m 755 /tmp/matau_gps_watchdog.py /tmp/matau_gpsclock.py /usr/local/bin/ && \
@@ -62,7 +65,7 @@ ssh matau '
   echo "--- watchdog dry run (should exit 0 quietly with a live GPS):"
   sudo python3 /usr/local/bin/matau_gps_watchdog.py; echo "exit=$?"
   echo "--- wlan0 power save (expect: off):"
-  iw dev wlan0 get power_save
+  /sbin/iw dev wlan0 get power_save
 '
 echo "== 7/7 git snapshot on the Pi =="
 ssh matau '
