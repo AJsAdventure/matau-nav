@@ -581,7 +581,7 @@ private struct WindRose: View {
             }
 
             // 6. Centre heading pill — the boat's magnetic compass, always.
-            Text(String(format: "%03.0f°M", heading))
+            Text(String(format: "%03.0f°", heading))
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
                 .foregroundStyle(Color.textPrimary)
                 .contentTransition(.numericText())

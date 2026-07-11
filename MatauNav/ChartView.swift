@@ -375,6 +375,11 @@ struct ChartView: View {
             if settings.isAnchorMode && !macPanelShell { anchorConsole }
             if !settings.isAnchorMode, let route = settings.activeRoute, let leg = route.activeWaypoint {
                 routeProgressBar(route: route, leg: leg)
+            } else if let route = settings.activeRoute, route.activeWaypoint == nil {
+                // Route completed (legIndex ran past the last waypoint): the
+                // progress bar is gone but the route still draws on the chart —
+                // give it an explicit dismissal.
+                routeFinishedBar(route: route)
             }
             HStack(spacing: 8) {
                 if settings.chartShowSetDrift, !settings.isAnchorMode, let sd = setDriftReadout {
@@ -866,6 +871,28 @@ struct ChartView: View {
         // Auto-advance is handled on the Pi (state_server.py route_advance_loop).
     }
 
+    private func routeFinishedBar(route: Route) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.callout).foregroundStyle(Color.statusGreen)
+            Text("Route \(route.name ?? "") finished")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+            Spacer()
+            Button {
+                Task { await piState.clearRoute() }
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3).foregroundStyle(.white.opacity(0.85))
+            }
+            .buttonStyle(.plain)
+            .pointerCursor()
+            .help("Close route")
+        }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+
     // MARK: Long-press menu
 
     private func handleLongPress(coord: CLLocationCoordinate2D) {
@@ -1223,6 +1250,13 @@ struct ChartView: View {
                         Task {
                             if let d = await BathymetryService.depth(at: coord) { probedDepth = d }
                         }
+                        withAnimation { showLongPressMenu = false }
+                    }
+                }
+                if settings.activeRoute != nil {
+                    positionAction(icon: "xmark.circle.fill", label: "End Route",
+                                   color: .systemPurple, fullWidth: true) {
+                        Task { await piState.clearRoute() }
                         withAnimation { showLongPressMenu = false }
                     }
                 }
