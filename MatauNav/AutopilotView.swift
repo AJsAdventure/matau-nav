@@ -467,8 +467,13 @@ struct AutopilotView: View {
             let sign:  Double = cmd.hasPrefix("plus") ? 1 : -1
             withAnimation {
                 if displayedMode == .wind {
+                    // Signed AWA convention: +starboard / −port. Turning to
+                    // STARBOARD (plus keys) rotates the apparent wind toward
+                    // port, i.e. the signed angle DECREASES — on starboard
+                    // tack 34°S drops to 24°S, on port tack 34°P grows to
+                    // 44°P. The old `+ sign*delta` ran the readout backwards.
                     lockedWindAngle = max(-180, min(180,
-                        (lockedWindAngle ?? signalK.apparentWindAngle) + sign * delta))
+                        (lockedWindAngle ?? signalK.apparentWindAngle) - sign * delta))
                 } else {
                     signalK.targetHeading = (signalK.targetHeading + sign * delta + 360)
                         .truncatingRemainder(dividingBy: 360)

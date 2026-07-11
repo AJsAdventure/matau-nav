@@ -504,6 +504,9 @@ struct ChartMapView: PlatformViewRepresentable {
         var sig = "v\(r5(vesselLat)),\(r5(vesselLon));c\(Int(cog.rounded())),s\(Int((sog * 10).rounded()));"
         sig += "tr" + tracks.map { "\($0.points.count)|\($0.colorHex)|\($0.source)" }.joined(separator: ",") + ";"
         sig += "wp\(sc(waypoint));mob\(sc(mobCoord));pm\(predictorMinutes);"
+        // The predictor spans the viewport, so its geometry depends on zoom —
+        // half-octave buckets rebuild it when the scale changes materially.
+        sig += "zb\(Int((log2(max(map.region.span.longitudeDelta, 1e-9)) * 2).rounded()));"
         sig += "ll\(sc(laylineWaypoint)),twd\(Int(trueWindDirection.rounded())),ta\(Int(tackAngleDeg.rounded()));"
         sig += "rt\(routeSig);gz\(r5(guardZoneRadiusNm));"
         sig += "an\(anchorMode ? 1 : 0)\(anchorActive ? 1 : 0),\(r5(anchorLat)),\(r5(anchorLon)),r\(r5(anchorRadius)),w\(r5(anchorWarnRadius)),f\(anchorFlash ? 1 : 0),sw\(anchorSwinging ? 1 : 0),swt\(anchorSwingTrack.count),itwd\(Int(anchorInitialTWD.rounded())),sh\(Int(anchorWindShift.rounded()));"
@@ -535,15 +538,44 @@ struct ChartMapView: PlatformViewRepresentable {
                 newOverlays.append(line)
             }
 
-            // Predictor line — projects current COG/SOG `predictorMinutes` ahead
+            // Predictor — a COG vector long enough to leave the visible
+            // area from anywhere in it (region diagonal), with a small dot
+            // every `predictorMinutes` of sailing time at the current SOG.
             if predictorMinutes > 0, vesselLat != 0 || vesselLon != 0, sog > 0.1 {
-                let here = CLLocationCoordinate2D(latitude: vesselLat, longitude: vesselLon)
-                let ahead = NavMath.predictor(from: here, cogDeg: cog, sogKn: sog,
-                                              minutes: predictorMinutes)
+                let here   = CLLocationCoordinate2D(latitude: vesselLat, longitude: vesselLon)
+                let region = map.region
+                let corner1 = CLLocationCoordinate2D(
+                    latitude:  region.center.latitude  - region.span.latitudeDelta  / 2,
+                    longitude: region.center.longitude - region.span.longitudeDelta / 2)
+                let corner2 = CLLocationCoordinate2D(
+                    latitude:  region.center.latitude  + region.span.latitudeDelta  / 2,
+                    longitude: region.center.longitude + region.span.longitudeDelta / 2)
+                let lengthNm = max(NavMath.distanceNm(corner1, corner2), 0.2)
+                let ahead = NavMath.destination(from: here, bearingDeg: cog, distanceNm: lengthNm)
                 let pl = ColoredPolyline(coordinates: [here, ahead], count: 2)
                 pl.strokeColor = PlatformColor.systemCyan.withAlphaComponent(0.85)
                 pl.lineWidth = 2
                 newOverlays.append(pl)
+
+                // Time ticks: geographic circles sized to ~0.35% of the view
+                // height so they read the same at every zoom (the signature's
+                // zoom bucket rebuilds them when the scale changes).
+                let nmPerTick = sog * Double(predictorMinutes) / 60.0
+                if nmPerTick > 0.005 {
+                    let dotRadiusM = max(4.0, region.span.latitudeDelta * 111_000 * 0.0035)
+                    var d = nmPerTick
+                    var count = 0
+                    while d < lengthNm, count < 48 {
+                        let c = ColoredCircle(center: NavMath.destination(from: here, bearingDeg: cog, distanceNm: d),
+                                              radius: dotRadiusM)
+                        c.fillColor   = PlatformColor.systemCyan.withAlphaComponent(0.9)
+                        c.strokeColor = PlatformColor.white.withAlphaComponent(0.6)
+                        c.lineWidth   = 1
+                        newOverlays.append(c)
+                        d += nmPerTick
+                        count += 1
+                    }
+                }
             }
 
             // Laylines from the active layline waypoint
