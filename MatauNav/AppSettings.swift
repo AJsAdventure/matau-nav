@@ -114,6 +114,13 @@ final class AppSettings {
 
     // MARK: Chartplotter overlays
     var chartShowPredictor:   Bool   = true
+    /// Predictor tick interval choices (minutes). Short marks for coastal
+    /// hops, hours for passages — 24 h of ticks turns the line into a
+    /// passage ruler.
+    static let predictorTickChoices = [5, 10, 15, 30, 60, 180, 360, 720, 1440]
+    static func predictorTickLabel(_ minutes: Int) -> String {
+        minutes < 60 ? "\(minutes) min" : "\(minutes / 60) h"
+    }
     var chartPredictorMin:    Int    = 6        // minutes ahead the predictor line extends
     var chartShowLaylines:    Bool   = true
     var chartTackAngleDeg:    Double = 45       // closed-hauled tacking half-angle
@@ -287,7 +294,11 @@ final class AppSettings {
             aisFriends = v
         }
         chartShowPredictor   = ud.object(forKey: Keys.chartShowPredictor)   as? Bool ?? true
-        let pm = ud.integer(forKey: Keys.chartPredictorMin); chartPredictorMin = pm > 0 ? pm : 6
+        let pm = ud.integer(forKey: Keys.chartPredictorMin)
+        // Migrate old slider values (1–20 continuous) to the discrete choices.
+        chartPredictorMin = Self.predictorTickChoices.contains(pm)
+            ? pm
+            : (Self.predictorTickChoices.min(by: { abs($0 - pm) < abs($1 - pm) }) ?? 10)
         chartShowLaylines    = ud.object(forKey: Keys.chartShowLaylines)    as? Bool ?? true
         let ta = ud.double(forKey: Keys.chartTackAngleDeg);  chartTackAngleDeg  = ta > 0 ? ta : 45
         chartShowWindRibbon  = ud.object(forKey: Keys.chartShowWindRibbon)  as? Bool ?? true

@@ -165,12 +165,15 @@ struct ChartSettingsSheet: View {
             toggle("Predictor line",       $s.chartShowPredictor)
             if s.chartShowPredictor {
                 HStack {
-                    Text("Predictor: \(s.chartPredictorMin) min")
+                    Text("Tick every")
                         .font(.caption).foregroundStyle(Color.textSecondary)
-                    Slider(value: Binding(
-                        get: { Double(s.chartPredictorMin) },
-                        set: { s.chartPredictorMin = Int($0) }
-                    ), in: 1...20, step: 1)
+                    Picker("", selection: $s.chartPredictorMin) {
+                        ForEach(AppSettings.predictorTickChoices, id: \.self) { m in
+                            Text(AppSettings.predictorTickLabel(m)).tag(m)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
                 }
             }
             toggle("Laylines to active waypoint", $s.chartShowLaylines)

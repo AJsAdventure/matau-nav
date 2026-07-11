@@ -557,21 +557,23 @@ struct ChartMapView: PlatformViewRepresentable {
                 pl.lineWidth = 2
                 newOverlays.append(pl)
 
-                // Time ticks: geographic circles sized to ~0.35% of the view
-                // height so they read the same at every zoom (the signature's
-                // zoom bucket rebuilds them when the scale changes).
+                // Time ticks: short marks PERPENDICULAR to the course line,
+                // every `predictorMinutes` of sailing at current SOG — the
+                // line becomes a time ruler. Half-length scales with the view
+                // (the signature's zoom bucket rebuilds on scale changes).
                 let nmPerTick = sog * Double(predictorMinutes) / 60.0
                 if nmPerTick > 0.005 {
-                    let dotRadiusM = max(4.0, region.span.latitudeDelta * 111_000 * 0.0035)
+                    let halfLenNm = max(0.002, NavMath.distanceNm(corner1, corner2) * 0.008)
                     var d = nmPerTick
                     var count = 0
                     while d < lengthNm, count < 48 {
-                        let c = ColoredCircle(center: NavMath.destination(from: here, bearingDeg: cog, distanceNm: d),
-                                              radius: dotRadiusM)
-                        c.fillColor   = PlatformColor.systemCyan.withAlphaComponent(0.9)
-                        c.strokeColor = PlatformColor.white.withAlphaComponent(0.6)
-                        c.lineWidth   = 1
-                        newOverlays.append(c)
+                        let centre = NavMath.destination(from: here, bearingDeg: cog, distanceNm: d)
+                        let a = NavMath.destination(from: centre, bearingDeg: cog + 90, distanceNm: halfLenNm)
+                        let b = NavMath.destination(from: centre, bearingDeg: cog - 90, distanceNm: halfLenNm)
+                        let tick = ColoredPolyline(coordinates: [a, b], count: 2)
+                        tick.strokeColor = PlatformColor.systemCyan.withAlphaComponent(0.9)
+                        tick.lineWidth = 2
+                        newOverlays.append(tick)
                         d += nmPerTick
                         count += 1
                     }
