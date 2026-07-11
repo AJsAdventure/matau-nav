@@ -124,6 +124,11 @@ final class PiStateService {
     /// command so an optimistic local update isn't stomped by a stale poll
     /// that returns before the AP has processed the button press.
     private var suppressHeadingPollUntil: Date = .distantPast
+    /// While in the future, apply() will NOT mirror the Pi's route into
+    /// settings — a poll response already in flight when the user cleared or
+    /// replaced the route must not resurrect the old one (which locked the
+    /// UI in "Add to Route" and made routes feel un-cancellable).
+    private var suppressRouteMirrorUntil: Date = .distantPast
 
     /// Call before sending a plus/minus heading command so the local optimistic
     /// update survives for `duration` seconds without being overwritten by polls.
@@ -229,19 +234,21 @@ final class PiStateService {
             }
         }
 
-        if let r = p.route {
-            let wps = r.waypoints.enumerated().map { (i, w) in
-                RouteWaypoint(
-                    name: w.name ?? String(i + 1),
-                    lat: w.lat, lon: w.lon,
-                    arrivalRadiusNm: w.arrivalRadiusNm ?? 0.05
-                )
+        if Date() > suppressRouteMirrorUntil {
+            if let r = p.route {
+                let wps = r.waypoints.enumerated().map { (i, w) in
+                    RouteWaypoint(
+                        name: w.name ?? String(i + 1),
+                        lat: w.lat, lon: w.lon,
+                        arrivalRadiusNm: w.arrivalRadiusNm ?? 0.05
+                    )
+                }
+                s.activeRoute = Route(name: r.name ?? "Route",
+                                      waypoints: wps,
+                                      legIndex: r.legIndex ?? 0)
+            } else if s.activeRoute != nil {
+                s.activeRoute = nil
             }
-            s.activeRoute = Route(name: r.name ?? "Route",
-                                  waypoints: wps,
-                                  legIndex: r.legIndex ?? 0)
-        } else if s.activeRoute != nil {
-            s.activeRoute = nil
         }
     }
 
@@ -254,6 +261,10 @@ final class PiStateService {
     func clearMOB() async { await delete("/mob") }
 
     func setRoute(_ r: Route) async {
+        // Optimistic: show the new route immediately; the Pi confirms via poll.
+        settings?.activeRoute = r
+        settings?.persist()
+        suppressRouteMirrorUntil = Date().addingTimeInterval(5)
         let body: [String: Any] = [
             "name": r.name,
             "legIndex": r.legIndex,
@@ -269,7 +280,14 @@ final class PiStateService {
         await put("/route", body: body)
     }
 
-    func clearRoute() async { await delete("/route") }
+    func clearRoute() async {
+        // Optimistic: the route disappears NOW — an in-flight poll carrying
+        // the old route can no longer resurrect it after the delete.
+        settings?.activeRoute = nil
+        settings?.persist()
+        suppressRouteMirrorUntil = Date().addingTimeInterval(5)
+        await delete("/route")
+    }
 
     func advanceRoute() async { await postEmpty("/route/advance") }
 

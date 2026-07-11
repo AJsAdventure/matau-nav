@@ -298,6 +298,13 @@ def anchor_loop():
 # --- HTTP --------------------------------------------------------------------
 
 class Handler(BaseHTTPRequestHandler):
+    # Socket timeout for each connection: without it, one client that
+    # vanishes mid-request (Wi-Fi blip) leaves this handler thread blocked
+    # FOREVER — threads accumulated for ~1 day until Python could not start
+    # new ones and every request got connection-reset (live incident
+    # 2026-07-11, 764 leaked threads on matau-state).
+    timeout = 20
+
 
     def log_message(self, fmt, *args):
         pass

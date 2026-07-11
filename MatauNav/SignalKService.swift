@@ -443,7 +443,13 @@ final class SignalKService {
 
         case "steering.autopilot.state":
             if let s = rawValue as? String {
-                autopilotEngaged = (s == "auto")
+                // "auto", "wind" (vane) and "route"/"track" are all ENGAGED
+                // states. The old == "auto" check reported STANDBY while the
+                // pilot steered in vane mode — and because this delta arrives
+                // every second, it kept overwriting the correct Pi-mirrored
+                // value, so the app looked wrong from launch.
+                let v = s.lowercased()
+                autopilotEngaged = !(v == "standby" || v == "off" || v.isEmpty)
             }
 
         case "steering.autopilot.target.headingMagnetic":

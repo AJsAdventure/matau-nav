@@ -1036,6 +1036,13 @@ threading.Thread(target=_anchor_relocate_loop, daemon=True).start()
 # ---------------------------------------------------------------------------
 
 class Handler(http.server.BaseHTTPRequestHandler):
+    # Socket timeout for each connection: without it, one client that
+    # vanishes mid-request (Wi-Fi blip) leaves this handler thread blocked
+    # FOREVER — threads accumulated for ~1 day until Python could not start
+    # new ones and every request got connection-reset (live incident
+    # 2026-07-11, 764 leaked threads on matau-state).
+    timeout = 20
+
     def log_message(self, fmt, *args):
         print(f"[PW HTTP] {self.address_string()} - {fmt % args}")
 

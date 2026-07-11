@@ -685,6 +685,13 @@ def _build_state_payload() -> dict[str, Any]:
     }
 
 class Handler(http.server.BaseHTTPRequestHandler):
+    # Socket timeout for each connection: without it, one client that
+    # vanishes mid-request (Wi-Fi blip) leaves this handler thread blocked
+    # FOREVER — threads accumulated for ~1 day until Python could not start
+    # new ones and every request got connection-reset (live incident
+    # 2026-07-11, 764 leaked threads on matau-state).
+    timeout = 20
+
 
     def _send(self, code: int, payload):
         body = json.dumps(payload).encode()
