@@ -44,17 +44,17 @@ struct MacRootView: View {
         @Bindable var shell = shell
         ChartView()
             .environment(\.macPanelShell, true)
+            // Sail mode: full-height docked Autopilot column. Anchor mode has
+            // no docked column — its console is a bottom-up floating card in
+            // the bottomLeading overlay, sized to its content, so the chart
+            // (and the swing circle) stays visible behind it.
             .safeAreaInset(edge: .leading, spacing: 0) {
-                if !shell.leftCollapsed {
-                    SidePanel(title: settings.isAnchorMode ? "Anchor" : "Autopilot",
-                              symbol: settings.isAnchorMode ? "circle.dashed" : "safari.fill",
+                if !shell.leftCollapsed, !settings.isAnchorMode {
+                    SidePanel(title: "Autopilot",
+                              symbol: "safari.fill",
                               edge: .leading,
                               collapsed: $shell.leftCollapsed) {
-                        if settings.isAnchorMode {
-                            AnchorSidePanel()
-                        } else {
-                            AutopilotView()
-                        }
+                        AutopilotView()
                     }
                 }
             }
@@ -96,12 +96,18 @@ struct MacRootView: View {
                 MacTopBar()
             }
             .overlay(alignment: .bottomLeading) {
-                VStack(alignment: .leading, spacing: 8) {
-                    MacStatusStrip()
-                    SettingsFAB()
+                HStack(alignment: .bottom, spacing: 10) {
+                    if settings.isAnchorMode, !shell.leftCollapsed {
+                        AnchorSidePanel()
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        MacStatusStrip()
+                        SettingsFAB()
+                    }
                 }
                 .padding(.leading, 14)
                 .padding(.bottom, 14)
+                .padding(.top, 60)   // the card may grow tall — never under the top bar
             }
             .sheet(isPresented: $shell.showSettings) {
                 MacSettingsSheet()
@@ -160,8 +166,12 @@ struct MenuBarContentView: View {
     @Environment(SignalKService.self)     private var signalK
     @Environment(AnchorWatchService.self) private var anchorWatch
     @Environment(\.openWindow)            private var openWindow
+    @State private var confirmRaise = false
 
     private var hasFix: Bool { signalK.latitude != 0 || signalK.longitude != 0 }
+    private var hasLiveFix: Bool {
+        signalK.boatPositionIsLive || anchorWatch.freshDeviceCoord != nil
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -251,18 +261,36 @@ struct MenuBarContentView: View {
             .pointerCursor()
         }
 
+        // Drop is instant (dropAnchorAtCurrentPosition sets the anchor position
+        // from the freshest live fix); raise is two-step — one stray click in a
+        // menu-bar popover must not silently kill the watch.
         Button {
             if settings.anchorActive {
-                anchorWatch.raiseAnchor(settings: settings)
+                if confirmRaise {
+                    anchorWatch.raiseAnchor(settings: settings)
+                    confirmRaise = false
+                } else {
+                    confirmRaise = true
+                    Task {
+                        try? await Task.sleep(for: .seconds(5))
+                        confirmRaise = false
+                    }
+                }
             } else {
-                anchorWatch.dropAnchor(settings: settings, signalK: signalK)
+                anchorWatch.dropAnchorAtCurrentPosition(settings: settings, signalK: signalK)
             }
         } label: {
-            Label(settings.anchorActive ? "Raise anchor" : "Drop anchor",
-                  systemImage: "anchor")
-                .frame(maxWidth: .infinity)
+            HStack(spacing: 6) {
+                AnchorMark().frame(width: 14, height: 14)   // no "anchor" SF Symbol exists
+                Text(settings.anchorActive
+                     ? (confirmRaise ? "Click again to raise" : "Raise anchor")
+                     : "Drop anchor")
+            }
+            .frame(maxWidth: .infinity)
         }
         .buttonStyle(.bordered)
+        .tint(confirmRaise ? Color.statusRed : nil)
+        .disabled(!settings.anchorActive && !hasLiveFix)
         .pointerCursor()
 
         HStack {
@@ -319,12 +347,22 @@ struct MatauCommands: Commands {
         }
 
         CommandMenu("Anchor") {
-            Button(monitor.settings.anchorActive ? "Raise Anchor" : "Drop Anchor") {
+            Button(monitor.settings.anchorActive ? "Raise Anchor…" : "Drop Anchor") {
                 if monitor.settings.anchorActive {
-                    monitor.anchorWatch.raiseAnchor(settings: monitor.settings)
+                    // ⌘⇧D is one keystroke — confirm before killing the watch.
+                    let alert = NSAlert()
+                    alert.messageText     = "Raise the anchor?"
+                    alert.informativeText = "This stops the anchor watch and all its alarms."
+                    alert.alertStyle      = .warning
+                    alert.addButton(withTitle: "Raise Anchor")
+                    alert.addButton(withTitle: "Cancel")
+                    NSApp.activate(ignoringOtherApps: true)
+                    if alert.runModal() == .alertFirstButtonReturn {
+                        monitor.anchorWatch.raiseAnchor(settings: monitor.settings)
+                    }
                 } else {
-                    monitor.anchorWatch.dropAnchor(settings: monitor.settings,
-                                                   signalK: monitor.signalK)
+                    monitor.anchorWatch.dropAnchorAtCurrentPosition(
+                        settings: monitor.settings, signalK: monitor.signalK)
                 }
             }
             .keyboardShortcut("d", modifiers: [.command, .shift])

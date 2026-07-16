@@ -681,7 +681,7 @@ struct ChartSettingsSheet: View {
             HStack(spacing: 8) {
                 actionChip("Import GPX", icon: "square.and.arrow.down") { showImporter = true }
                 actionChip("Refresh Pi", icon: "arrow.clockwise") {
-                    Task { await tracks.fetchPiTracks(baseURL: signalK.baseURL) }
+                    Task { await tracks.fetchPiTracks(base: signalK.piBase(port: 10113), headers: signalK.piHeaders(for: signalK.piBase(port: 10113))) }
                 }
                 actionChip("Save live", icon: "checkmark.circle") {
                     saveLiveName = "Trail \(Date().formatted(date: .abbreviated, time: .shortened))"

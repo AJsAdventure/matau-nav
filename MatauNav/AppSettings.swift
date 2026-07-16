@@ -20,6 +20,38 @@ final class AppSettings {
     var signalKHost:   String = "matau.local"
     var signalKPort:   Int    = 3000
     var signalKUseTLS: Bool   = false
+    /// Tailscale address of the boat Pi (IP or MagicDNS name). Automatic
+    /// remote fallback for EVERYTHING on that machine — SignalK instruments
+    /// and all the Pi services on their ports. Empty = fallback disabled.
+    var tailscaleHost: String = "100.100.220.67"
+
+    /// Public HTTPS remote bridge (Cloudflare Tunnel) — works from any
+    /// network with no VPN app, so it coexists with NordVPN. Each Pi port is
+    /// published as https://matau-<port>.<remoteDomain>, protected by a
+    /// Cloudflare Access service token. Empty domain = bridge disabled.
+    var remoteDomain:     String = ""    // e.g. "gleser.ai"
+    var cfAccessClientId: String = ""    // Access service token ID (secret in Keychain)
+
+    static let remoteHostPrefix = "matau-"
+
+    /// Base URL of a Pi service over the public bridge, or nil when disabled.
+    func remoteBase(port: Int) -> String? {
+        let d = remoteDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !d.isEmpty else { return nil }
+        return "https://\(Self.remoteHostPrefix)\(port).\(d)"
+    }
+
+    /// Cloudflare Access service-token headers — required on every request to
+    /// a remote-bridge hostname, deliberately withheld from cleartext LAN and
+    /// Tailscale requests so the secret only ever travels inside TLS.
+    func boatAuthHeaders(forBase base: String) -> [String: String] {
+        let d = remoteDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !d.isEmpty, base.contains(d),
+              !cfAccessClientId.isEmpty,
+              let secret = CFAccessKeychain.loadSecret(), !secret.isEmpty else { return [:] }
+        return ["CF-Access-Client-Id":     cfAccessClientId,
+                "CF-Access-Client-Secret": secret]
+    }
 
     // Autopilot corner instruments (raw string values of Instrument enum)
     var cornerTopLeft:     String = "sog"
@@ -156,6 +188,9 @@ final class AppSettings {
         static let host              = "signalKHost"
         static let port              = "signalKPort"
         static let useTLS            = "signalKUseTLS"
+        static let tailscaleHost     = "tailscaleHost"
+        static let remoteDomain      = "remoteDomain"
+        static let cfAccessClientId  = "cfAccessClientId"
         static let cornerTopLeft     = "cornerTopLeft"
         static let cornerTopRight    = "cornerTopRight"
         static let cornerBotLeft     = "cornerBottomLeft"
@@ -233,6 +268,15 @@ final class AppSettings {
         if let h = ud.string(forKey: Keys.host), !h.isEmpty { signalKHost = h }
         let p = ud.integer(forKey: Keys.port); if p > 0 { signalKPort = p }
         signalKUseTLS = ud.bool(forKey: Keys.useTLS)
+        if let t = ud.string(forKey: Keys.tailscaleHost) {
+            tailscaleHost = t   // "" is a valid saved value: fallback disabled
+        } else if let raw = ud.string(forKey: Keys.anchorPiTailscaleURL),
+                  let comps = URLComponents(string: raw),
+                  let h = comps.host, !h.isEmpty {
+            tailscaleHost = h   // migrate: reuse the anchor daemon's Tailscale IP
+        }
+        remoteDomain     = ud.string(forKey: Keys.remoteDomain)     ?? ""
+        cfAccessClientId = ud.string(forKey: Keys.cfAccessClientId) ?? ""
         if let v = ud.string(forKey: Keys.cornerTopLeft)  { cornerTopLeft   = v }
         if let v = ud.string(forKey: Keys.cornerTopRight) { cornerTopRight  = v }
         if let v = ud.string(forKey: Keys.cornerBotLeft)  { cornerBottomLeft  = v }
@@ -352,12 +396,23 @@ final class AppSettings {
         let h = signalKHost.trimmingCharacters(in: .whitespacesAndNewlines)
         return h.isEmpty ? "" : "http://\(h):10115"
     }
+    /// Anchor daemon over the tailnet — explicit override, else derived from
+    /// the shared tailscaleHost so one setting powers every remote fallback.
+    var effectiveAnchorPiTailscaleURL: String {
+        let v = anchorPiTailscaleURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard v.isEmpty else { return v }
+        let h = tailscaleHost.trimmingCharacters(in: .whitespacesAndNewlines)
+        return h.isEmpty ? "" : "http://\(h):10112"
+    }
 
     func persist() {
         let ud = UserDefaults.standard
         ud.set(signalKHost,         forKey: Keys.host)
         ud.set(signalKPort,         forKey: Keys.port)
         ud.set(signalKUseTLS,       forKey: Keys.useTLS)
+        ud.set(tailscaleHost,       forKey: Keys.tailscaleHost)
+        ud.set(remoteDomain,        forKey: Keys.remoteDomain)
+        ud.set(cfAccessClientId,    forKey: Keys.cfAccessClientId)
         ud.set(cornerTopLeft,       forKey: Keys.cornerTopLeft)
         ud.set(cornerTopRight,      forKey: Keys.cornerTopRight)
         ud.set(cornerBottomLeft,    forKey: Keys.cornerBotLeft)

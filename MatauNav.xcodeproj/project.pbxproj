@@ -78,6 +78,7 @@
 		7A24E9B6F66ED67090FB97D2 /* MacShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C9751959B3241E8C219B65 /* MacShell.swift */; };
 		7BAAE254051E1F0F588F89B9 /* WindRibbon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9464B6F72A8A48C1B1D1D62 /* WindRibbon.swift */; };
 		7DAAB4DED28C4AAC38A1835A /* ChartBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7690E30DA7C36C3BED77980A /* ChartBridge.swift */; };
+		7EFACC3AFF490D10F2C031F2 /* SystemPower.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897F138B7D99DC5770D16D9B /* SystemPower.swift */; };
 		8383024C109D0BAF0F375E13 /* ChartSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABAE7CB273EA7EA8926EF8F /* ChartSettingsSheet.swift */; };
 		83A0E492158A29A28360C079 /* AISService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405E0015529E4657BB98CC93 /* AISService.swift */; };
 		8A1873FDC659DF634BA531E2 /* RangeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3174CC04DF5A2F061F1E558 /* RangeSlider.swift */; };
@@ -98,6 +99,7 @@
 		A7CDBD90E3973DA9390FE099 /* AnchorWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A3663C39C598474B790D9E /* AnchorWizard.swift */; };
 		A9244C14AD1F89925A84D7C1 /* RegionPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFFE8D5D43FC481E3E119F1 /* RegionPickerSheet.swift */; };
 		A92A2C1D941203F313CF9FDD /* saronic_1_1.geojson in Resources */ = {isa = PBXBuildFile; fileRef = AFCEEE8A0EE2776DFD024379 /* saronic_1_1.geojson */; };
+		A9AD42C3F138603C67249EDF /* SystemPower.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897F138B7D99DC5770D16D9B /* SystemPower.swift */; };
 		AE14E92D9CFC2720B192A12A /* ChartSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABAE7CB273EA7EA8926EF8F /* ChartSettingsSheet.swift */; };
 		AE2543F98E72F1C019E6F921 /* RangeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3174CC04DF5A2F061F1E558 /* RangeSlider.swift */; };
 		AE36D1D6991F674EBCC2AD58 /* AppActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF25FE979E5DF24CF670929 /* AppActivity.swift */; };
@@ -236,6 +238,7 @@
 		81F0377797A662592CF18126 /* SignalKService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalKService.swift; sourceTree = "<group>"; };
 		873FD5CCAAB94036CA22A85F /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
 		87687852BA221EE2A77036EE /* MatauNavApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatauNavApp.swift; sourceTree = "<group>"; };
+		897F138B7D99DC5770D16D9B /* SystemPower.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemPower.swift; sourceTree = "<group>"; };
 		89F383BAC495E4221983489C /* cyclades_0_2.geojson */ = {isa = PBXFileReference; path = cyclades_0_2.geojson; sourceTree = "<group>"; };
 		8A234767D9DCF43D300E0172 /* cyclades_0_1.geojson */ = {isa = PBXFileReference; path = cyclades_0_1.geojson; sourceTree = "<group>"; };
 		8A32D246AD657DA047BC4E24 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
@@ -407,6 +410,7 @@
 				609BF820C11DF38D977B1347 /* PointerCursor.swift */,
 				01D9AA1E1245958F39A3E748 /* SheetDetents.swift */,
 				7ACE13B5C86F140EEE644E52 /* SystemAudio.swift */,
+				897F138B7D99DC5770D16D9B /* SystemPower.swift */,
 				2EE90BBABDA9905AA2084B52 /* ViewModifiers+Platform.swift */,
 			);
 			path = Platform;
@@ -643,6 +647,7 @@
 				3496C97C810291234E410CBB /* SignalKService.swift in Sources */,
 				E0A408FDC2C8203256A72D08 /* SystemAudio.swift in Sources */,
 				60CCB9267595CF95D0315705 /* SystemHealth.swift in Sources */,
+				A9AD42C3F138603C67249EDF /* SystemPower.swift in Sources */,
 				5A1791677BE3346C2CDF6276 /* Theme.swift in Sources */,
 				DAA0836C59846CE903C571D5 /* TileDownloader.swift in Sources */,
 				5E80D8FC1C2311E0F78E2A76 /* TilePrefetcher.swift in Sources */,
@@ -705,6 +710,7 @@
 				28558968F016687C07681E1D /* SignalKService.swift in Sources */,
 				DAFFECD10F8139343EFA301A /* SystemAudio.swift in Sources */,
 				E53F431BD9F5650C88D70AF2 /* SystemHealth.swift in Sources */,
+				7EFACC3AFF490D10F2C031F2 /* SystemPower.swift in Sources */,
 				0394EBF8DB60CCE8C1EBCA1B /* Theme.swift in Sources */,
 				916ADCA80899D0ACE488AC07 /* TileDownloader.swift in Sources */,
 				9859B0816D9A564F8D40E529 /* TilePrefetcher.swift in Sources */,

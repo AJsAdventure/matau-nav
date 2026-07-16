@@ -10,6 +10,87 @@ final class SignalKService {
     var port:   Int    = 3000
     var useTLS: Bool   = false          // ws:// vs wss://
 
+    // MARK: Remote fallbacks
+    //
+    // Three ways to reach the boat, probed in order before every (re)connect:
+    //   .local     — http://host:port on the boat Wi-Fi (always preferred)
+    //   .tailscale — same ports on the tailnet IP (needs the Tailscale app,
+    //                fights NordVPN — kept for setups that use it)
+    //   .remote    — public https://matau-<port>.<remoteDomain> via the Pi's
+    //                Cloudflare Tunnel, gated by an Access service token.
+    //                Plain HTTPS: works from any network, no VPN app.
+    // While on a fallback, the better paths are re-probed every 5 minutes.
+
+    enum BoatPath { case local, tailscale, remote }
+
+    /// Tailscale address of the same server (IP or MagicDNS name). Empty = tier disabled.
+    var tailscaleHost: String = ""
+    /// Domain the Cloudflare Tunnel publishes under (e.g. "gleser.ai"). Empty = tier disabled.
+    var remoteDomain: String = ""
+    /// Cloudflare Access service-token credentials for the remote tier.
+    var cfAccessClientId: String = ""
+    var cfAccessClientSecret: String = ""
+
+    private(set) var activePath: BoatPath = .local
+    var onTailscale: Bool { activePath == .tailscale }
+    var onRemote:    Bool { activePath == .remote }
+    private var lastBetterPathRecheckAt: Date = .distantPast
+
+    private var trimmedTailscale: String {
+        tailscaleHost.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    private var trimmedRemoteDomain: String {
+        remoteDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Host shown in the UI for the active path.
+    var activeHost: String {
+        switch activePath {
+        case .local:     return host
+        case .tailscale: return trimmedTailscale.isEmpty ? host : trimmedTailscale
+        case .remote:    return remoteHost(port: port) ?? host
+        }
+    }
+
+    private func remoteHost(port p: Int) -> String? {
+        let d = trimmedRemoteDomain
+        guard !d.isEmpty else { return nil }
+        return "\(AppSettings.remoteHostPrefix)\(p).\(d)"
+    }
+
+    /// Base URL for any Pi service (they share the boat host across ports).
+    /// Every sibling service derives its endpoint from this so the whole app
+    /// follows one failover decision.
+    func piBase(port p: Int) -> String {
+        switch activePath {
+        case .local:
+            return "http://\(host):\(p)"
+        case .tailscale:
+            let ts = trimmedTailscale
+            return "http://\(ts.isEmpty ? host : ts):\(p)"
+        case .remote:
+            if let h = remoteHost(port: p) { return "https://\(h)" }
+            return "http://\(host):\(p)"
+        }
+    }
+
+    /// Cloudflare Access headers, required iff `base` targets the remote
+    /// bridge. Keyed off the URL (not the current path) so a request built
+    /// just before a path flip still carries the right headers — and the
+    /// secret never travels over cleartext LAN/tailnet requests.
+    func piHeaders(for base: String) -> [String: String] {
+        let d = trimmedRemoteDomain
+        guard !d.isEmpty, base.contains(d),
+              !cfAccessClientId.isEmpty, !cfAccessClientSecret.isEmpty else { return [:] }
+        return ["CF-Access-Client-Id":     cfAccessClientId,
+                "CF-Access-Client-Secret": cfAccessClientSecret]
+    }
+
+    private func applyPiHeaders(_ req: inout URLRequest) {
+        guard let base = req.url?.absoluteString else { return }
+        for (k, v) in piHeaders(for: base) { req.setValue(v, forHTTPHeaderField: k) }
+    }
+
     var state:      ConnectionState = .disconnected
     var serverInfo: ServerInfo?
 
@@ -133,7 +214,15 @@ final class SignalKService {
     }
 
     // HTTP base URL (used for vessel name fetch + autopilot PUTs)
-    var baseURL: String { "http\(useTLS ? "s" : "")://\(host):\(port)" }
+    var baseURL: String {
+        switch activePath {
+        case .remote:
+            if let h = remoteHost(port: port) { return "https://\(h)" }
+            fallthrough
+        default:
+            return "http\(useTLS ? "s" : "")://\(activeHost):\(port)"
+        }
+    }
 
     /// True while the boat position feed is genuinely live — connected AND a fix
     /// arrived (over the WebSocket or REST fallback) within the last few seconds.
@@ -191,6 +280,25 @@ final class SignalKService {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(5))
                 guard let self, !Task.isCancelled else { break }
+                // While on a fallback path, re-probe the better tiers every
+                // 5 min and move up the moment one answers — local is faster
+                // and works with the boat's internet down. connect()
+                // replaces this task; bail out after switching.
+                if self.activePath != .local,
+                   Date().timeIntervalSince(self.lastBetterPathRecheckAt) > 300 {
+                    self.lastBetterPathRecheckAt = Date()
+                    var better: [BoatPath] = [.local]
+                    if self.activePath == .remote,
+                       self.configuredPaths.contains(.tailscale) { better.append(.tailscale) }
+                    var switched = false
+                    for path in better {
+                        if await self.probe(path) { self.activePath = path; switched = true; break }
+                    }
+                    if switched {
+                        await self.connect()   // replaces this task
+                        break
+                    }
+                }
                 // Only poll if we haven't had a WebSocket position update in 10 s
                 guard Date().timeIntervalSince(self.lastPositionAt) > 10 else {
                     self.restUnreachableCount = 0
@@ -214,21 +322,48 @@ final class SignalKService {
         }
     }
 
+    private static let isoTimestamp: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    private static let isoTimestampNoFrac: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
     @discardableResult
     private func fetchPositionFromREST() async -> RESTPositionResult {
+        // Full object (value + timestamp), NOT /value: the server serves the
+        // last known position no matter how old. Stamping a stale fix as
+        // live blinds boatPositionIsLive — and with it the drag and GPS-loss
+        // alarms — exactly when the GPS dies. Observed live 2026-07-12: the
+        // USB GPS hung and this fallback kept "confirming" an 8-min-old fix
+        // while the boat lay at anchor.
         guard let url = URL(string:
-            "\(baseURL)/signalk/v1/api/vessels/self/navigation/position/value") else { return .noPosition }
+            "\(baseURL)/signalk/v1/api/vessels/self/navigation/position") else { return .noPosition }
         do {
             var req = URLRequest(url: url, timeoutInterval: 4)
             if let token = authToken {
                 req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
+            applyPiHeaders(&req)
             let (data, _) = try await Self.restSession.data(for: req)
             guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let lat = obj["latitude"]  as? Double,
-                  let lon = obj["longitude"] as? Double,
+                  let value = obj["value"] as? [String: Any],
+                  let lat = value["latitude"]  as? Double,
+                  let lon = value["longitude"] as? Double,
                   (-90...90).contains(lat), (-180...180).contains(lon),
                   lat != 0 || lon != 0 else { return .noPosition }
+            if let ts = obj["timestamp"] as? String,
+               let stamped = Self.isoTimestamp.date(from: ts)
+                          ?? Self.isoTimestampNoFrac.date(from: ts) {
+                // Older than 60 s = a frozen feed, not a fix. Missing or
+                // unparseable timestamps are accepted (old behaviour) — a
+                // format quirk must not take the whole fallback down.
+                guard Date().timeIntervalSince(stamped) < 60 else { return .noPosition }
+            }
             applyPosition(lat: lat, lon: lon)
             return .ok
         } catch {
@@ -239,13 +374,24 @@ final class SignalKService {
     // MARK: - WebSocket lifecycle
 
     private func openWebSocket() async {
+        // Pick the host that actually answers (local vs Tailscale) BEFORE
+        // spending a WebSocket timeout on a dead address. On the boat the
+        // local probe answers in milliseconds; away from it, this is what
+        // routes the whole app over the tailnet.
+        await chooseHost()
+
         // Authenticate first if credentials are stored in Keychain
         if let (user, pass) = SignalKKeychain.loadCredentials() {
             authToken = await fetchToken(username: user, password: pass)
         }
 
-        let scheme = useTLS ? "wss" : "ws"
-        var urlString = "\(scheme)://\(host):\(port)/signalk/v1/stream?subscribe=none"
+        var urlString: String
+        switch activePath {
+        case .remote where remoteHost(port: port) != nil:
+            urlString = "wss://\(remoteHost(port: port)!)/signalk/v1/stream?subscribe=none"
+        default:
+            urlString = "\(useTLS ? "wss" : "ws")://\(activeHost):\(port)/signalk/v1/stream?subscribe=none"
+        }
         if let token = authToken,
            let encoded = token.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
             urlString += "&token=\(encoded)"
@@ -261,13 +407,66 @@ final class SignalKService {
         let session = URLSession(configuration: config)
         wsSession = session
 
-        let task = session.webSocketTask(with: url)
+        // Access headers ride on the upgrade request when on the remote path.
+        var wsReq = URLRequest(url: url)
+        applyPiHeaders(&wsReq)
+        let task = session.webSocketTask(with: wsReq)
         wsTask    = task
         subscribed = false
         task.resume()
 
         startReceiving(task: task)
         startPing(task: task)
+    }
+
+    /// Candidate paths in preference order (local first, remote last).
+    private var configuredPaths: [BoatPath] {
+        var out: [BoatPath] = [.local]
+        let ts = trimmedTailscale
+        if !ts.isEmpty, ts != host { out.append(.tailscale) }
+        if remoteHost(port: port) != nil { out.append(.remote) }
+        return out
+    }
+
+    /// Pick the path that actually answers before spending a WebSocket
+    /// timeout on a dead address. The last-good path is probed first so
+    /// reconnects while away from the boat stay fast; otherwise preference
+    /// order (local → tailscale → remote). When nothing answers the previous
+    /// choice stands — the reconnect backoff will land here again anyway.
+    private func chooseHost() async {
+        var order = configuredPaths
+        guard order.count > 1 else { activePath = .local; return }
+        if activePath != .local, let i = order.firstIndex(of: activePath) {
+            order.remove(at: i)
+            order.insert(activePath, at: 0)
+        }
+        for path in order {
+            if await probe(path) {
+                if path != .local, activePath == .local { lastBetterPathRecheckAt = Date() }
+                activePath = path
+                return
+            }
+        }
+    }
+
+    /// GET /signalk (the discovery document) with a short timeout — cheap
+    /// liveness check for one candidate path. The remote tier needs the
+    /// Access headers or Cloudflare answers 403 for everyone.
+    private func probe(_ path: BoatPath) async -> Bool {
+        let base: String
+        switch path {
+        case .local:     base = "http\(useTLS ? "s" : "")://\(host):\(port)"
+        case .tailscale: base = "http\(useTLS ? "s" : "")://\(trimmedTailscale):\(port)"
+        case .remote:
+            guard let h = remoteHost(port: port) else { return false }
+            base = "https://\(h)"
+        }
+        guard let url = URL(string: base + "/signalk") else { return false }
+        var req = URLRequest(url: url, timeoutInterval: 3)
+        req.cachePolicy = .reloadIgnoringLocalCacheData
+        applyPiHeaders(&req)
+        guard let (_, resp) = try? await Self.restSession.data(for: req) else { return false }
+        return (resp as? HTTPURLResponse)?.statusCode == 200
     }
 
     private func closeWebSocket() {
@@ -531,6 +730,7 @@ final class SignalKService {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try? JSONSerialization.data(withJSONObject: ["username": username,
                                                                     "password": password])
+        applyPiHeaders(&req)
         guard let (data, resp) = try? await Self.restSession.data(for: req),
               (resp as? HTTPURLResponse)?.statusCode == 200,
               let json  = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -566,14 +766,17 @@ final class SignalKService {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = authToken { req.setValue("JWT \(token)", forHTTPHeaderField: "Authorization") }
         req.httpBody = try? JSONSerialization.data(withJSONObject: ["value": value])
+        applyPiHeaders(&req)
         _ = try? await Self.restSession.data(for: req)
     }
 
     // MARK: - Vessel name (HTTP, called once on connect)
 
     private func fetchVesselName() async -> String {
-        guard let url  = URL(string: "\(baseURL)/signalk/v1/api/vessels/self"),
-              let (data, _) = try? await Self.restSession.data(from: url),
+        guard let url = URL(string: "\(baseURL)/signalk/v1/api/vessels/self") else { return "Matau" }
+        var req = URLRequest(url: url, timeoutInterval: 8)
+        applyPiHeaders(&req)
+        guard let (data, _) = try? await Self.restSession.data(for: req),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let name = json["name"] as? String else { return "Matau" }
         return name

@@ -81,10 +81,39 @@ final class PredictWindService {
     private var piURL: String = ""
     private var pollTask: Task<Void, Never>?
 
+    /// Follows SignalK's local/Tailscale/remote failover so forecast + PW-AIS
+    /// keep working off the boat. Wired by AppMonitor.
+    weak var signalK: SignalKService?
+
+    /// Request with Cloudflare Access headers when the URL targets the
+    /// public bridge (no-ops for LAN/tailnet URLs).
+    private func piRequest(_ url: URL, timeout: TimeInterval) -> URLRequest {
+        var req = URLRequest(url: url, timeoutInterval: timeout)
+        if let sk = signalK {
+            for (k, v) in sk.piHeaders(for: url.absoluteString) {
+                req.setValue(v, forHTTPHeaderField: k)
+            }
+        }
+        return req
+    }
+
     // MARK: - Public interface
 
     func configure(piURL: String) {
         self.piURL = piURL
+    }
+
+    /// Point the Pi's forecast (and the forecast alarm, if enabled) at the
+    /// anchor position. One shared implementation for every drop path —
+    /// ChartView's console, the anchor wizard, and the macOS side panel.
+    func armForecastForAnchor(settings: AppSettings) async {
+        let piURL = buildPiURL(settings: settings)
+        guard !piURL.isEmpty else { return }
+        configure(piURL: piURL)
+        let locId = await setForecastLocation(lat: settings.anchorLat, lon: settings.anchorLon)
+        if settings.forecastAlarmEnabled, let lid = locId {
+            await setForecastAlarm(enabled: true, locationId: lid, settings: settings)
+        }
     }
 
     func start(settings: AppSettings) {
@@ -109,7 +138,7 @@ final class PredictWindService {
             status = .failed("Invalid Pi URL")
             return false
         }
-        var req = URLRequest(url: url, timeoutInterval: 20)
+        var req = piRequest(url, timeout: 20)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = ["email": email, "password": password]
@@ -137,7 +166,7 @@ final class PredictWindService {
         guard !piURL.isEmpty else { return }
         guard let url = URL(string: "\(piURL)/health") else { return }
         do {
-            let (data, _) = try await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 8))
+            let (data, _) = try await URLSession.shared.data(for: piRequest(url, timeout: 8))
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 let authed = json["authenticated"] as? Bool ?? false
                 status = authed ? .authenticated : .idle
@@ -161,7 +190,7 @@ final class PredictWindService {
         ]
         guard let url = comps.url else { return }
         do {
-            let (data, _) = try await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 10))
+            let (data, _) = try await URLSession.shared.data(for: piRequest(url, timeout: 10))
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let vessels = json["vessels"] as? [[String: Any]] else { return }
             let targets = vessels.compactMap { v -> PWAISTarget? in
@@ -206,7 +235,7 @@ final class PredictWindService {
             // Forecast payloads are big and the Pi may be on a slow link, but
             // 60 s (the URLSession default) would freeze the Safe-Tonight
             // verdict for a full minute when the Pi is gone. 15 s is plenty.
-            let (data, _) = try await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 15))
+            let (data, _) = try await URLSession.shared.data(for: piRequest(url, timeout: 15))
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let d    = json["data"] as? [String: Any],
                   let ft   = d["ForecastTable"] as? [String: Any] else { return nil }
@@ -235,7 +264,7 @@ final class PredictWindService {
 
     func setForecastLocation(lat: Double, lon: Double) async -> Int? {
         guard !piURL.isEmpty, let url = URL(string: "\(piURL)/location/set") else { return nil }
-        var req = URLRequest(url: url, timeoutInterval: 30)
+        var req = piRequest(url, timeout: 30)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try? JSONSerialization.data(withJSONObject: [
@@ -250,7 +279,7 @@ final class PredictWindService {
 
     func setForecastAlarm(enabled: Bool, locationId: Int, settings: AppSettings) async {
         guard !piURL.isEmpty, let url = URL(string: "\(piURL)/forecast-alarm") else { return }
-        var req = URLRequest(url: url, timeoutInterval: 15)
+        var req = piRequest(url, timeout: 15)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body: [String: Any] = [
@@ -282,7 +311,12 @@ final class PredictWindService {
     }
 
     private func buildPiURL(settings: AppSettings) -> String {
-        // Explicit override, else derived from the SignalK host (:10115).
-        settings.effectivePredictWindPiURL
+        // Explicit override, else derived from whichever host currently
+        // reaches the boat (:10115) — local, or Tailscale when off the boat.
+        let explicit = settings.predictWindPiURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard explicit.isEmpty else { return explicit }
+        let host = (signalK?.activeHost ?? settings.signalKHost)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return host.isEmpty ? "" : "http://\(host):10115"
     }
 }

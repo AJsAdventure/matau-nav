@@ -1,4 +1,5 @@
 import AVFoundation
+import UserNotifications
 #if os(macOS)
 import AppKit
 #endif
@@ -44,6 +45,16 @@ final class AlarmPlayer {
             #endif
         } catch {
             print("[AlarmPlayer] start failed: \(error)")
+            // The siren is the last line of defence — if it cannot start, let
+            // notificationd make noise on our behalf (its sound plays even
+            // when our audio stack is the broken piece).
+            let content = UNMutableNotificationContent()
+            content.title             = "⚓ ALARM — siren failed to start"
+            content.body              = "An alarm is active but the siren could not play. Check the audio output NOW."
+            content.sound             = .defaultCritical
+            content.interruptionLevel = .timeSensitive
+            UNUserNotificationCenter.current().add(UNNotificationRequest(
+                identifier: "alarm_player_failed", content: content, trigger: nil))
         }
     }
 

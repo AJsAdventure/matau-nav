@@ -232,62 +232,172 @@ struct MacTopBar: View {
     }
 }
 
-// MARK: - Anchor side panel (anchor-mode left panel)
+// MARK: - Anchor side panel (anchor-mode bottom-left card)
 
-/// Compact anchor console for the left panel — the glanceable numbers plus
-/// the two actions that matter. Detailed setup (wizard, forecast, rode
-/// geometry) stays with the chart's own anchor-mode UI.
+/// The anchor console as a floating card that grows from the BOTTOM up and
+/// takes only the vertical space its content needs — the chart (and the
+/// swing circle) stays visible behind it. Everything the iOS bottom console
+/// shows, plus the recent alarm log and inline forecast/settings.
 struct AnchorSidePanel: View {
     @Environment(AppSettings.self)        private var settings
     @Environment(SignalKService.self)     private var signalK
     @Environment(AnchorWatchService.self) private var anchorWatch
+    @Environment(AnchorPiService.self)    private var piService
+    @Environment(PredictWindService.self) private var predictWind
+    @Environment(ChartBridge.self)        private var chartBridge
+    @Environment(MacShellState.self)      private var shell
+
+    @State private var showWizard         = false
+    @State private var showSafeTonight    = false
+    @State private var showAnchorSettings = false
+    @State private var confirmRaise       = false
+    /// Planned rode for the one-step drop (seeded from settings).
+    @State private var rode: Double = 30
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                statusPill
-                if settings.anchorActive {
-                    metrics
-                    if !anchorWatch.activeAlarms.isEmpty { alarmList }
-                    actions
-                } else {
-                    planning
-                }
+        VStack(spacing: 0) {
+            header
+            // Hug the content; fall back to scrolling only when the window
+            // is genuinely too short for it.
+            ViewThatFits(in: .vertical) {
+                inner
+                ScrollView(.vertical, showsIndicators: false) { inner }
             }
-            .padding(14)
         }
-        .background(Color.bgPrimary)
+        .frame(width: 372)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.bgPrimary.opacity(0.94))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.borderColor, lineWidth: 1))
+                .shadow(color: .black.opacity(0.35), radius: 14, y: 4)
+        )
+        .onAppear { rode = settings.anchorRodeLength > 0 ? settings.anchorRodeLength : 30 }
+        .sheet(isPresented: $showWizard) {
+            AnchorWizardSheet(settings: settings, signalK: signalK,
+                              anchorWatch: anchorWatch) { coord in
+                focusChart(on: coord)
+                Task { await predictWind.armForecastForAnchor(settings: settings) }
+            }
+        }
+        .sheet(isPresented: $showSafeTonight) {
+            SafeTonightSheet(
+                settings: settings, predictWind: predictWind,
+                anchorLat: settings.anchorActive ? settings.anchorLat : signalK.latitude,
+                anchorLon: settings.anchorActive ? settings.anchorLon : signalK.longitude)
+        }
+        .sheet(isPresented: $showAnchorSettings) {
+            AnchorSettingsSheetWithForecast(
+                settings: settings, anchorWatch: anchorWatch,
+                piService: piService, predictWind: predictWind, signalK: signalK)
+        }
+    }
+
+    private var header: some View {
+        HStack(spacing: 8) {
+            AnchorMark()
+                .frame(width: 14, height: 14)
+                .foregroundStyle(Color.textSecondary)
+            Text("ANCHOR")
+                .font(.footnote.weight(.semibold)).tracking(0.8)
+                .foregroundStyle(Color.textSecondary)
+            Spacer()
+            Button {
+                withAnimation(.spring(duration: 0.3)) { shell.leftCollapsed = true }
+            } label: {
+                Image(systemName: "chevron.down.2")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Color.textTertiary)
+            }
+            .buttonStyle(.plain)
+            .pointerCursor()
+            .help("Collapse panel (⌘1)")
+        }
+        .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 2)
+    }
+
+    private var inner: some View {
+        VStack(spacing: 12) {
+            if settings.anchorActive {
+                if !anchorWatch.activeAlarms.isEmpty { alarmBar }
+                statusCard
+                metrics
+                watchFooter
+                actions
+                if !anchorWatch.alarmLog.isEmpty { logCard }
+            } else {
+                planning
+            }
+        }
+        .padding(14)
     }
 
     private var state: AnchorWatchService.HoldState { anchorWatch.holdState(settings: settings) }
+    private var hasLiveFix: Bool {
+        signalK.boatPositionIsLive || anchorWatch.freshDeviceCoord != nil
+    }
 
-    private var statusPill: some View {
-        let (label, color): (String, Color) = switch state {
+    // MARK: Status
+
+    private var stateStyle: (label: String, color: Color) {
+        switch state {
         case .idle:     ("NOT ANCHORED", .textTertiary)
         case .holding:  ("HOLDING",      .statusGreen)
         case .warning:  ("WARNING",      .statusOrange)
         case .dragging: ("DRAGGING",     .statusRed)
         }
-        return HStack(spacing: 8) {
-            AnchorMark()
-                .frame(width: 16, height: 16)
-                .foregroundStyle(color)
-            Text(label)
-                .font(.headline.weight(.bold)).tracking(1.2)
-                .foregroundStyle(color)
-            Spacer()
+    }
+
+    private var statusCard: some View {
+        let s = stateStyle
+        return VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                AnchorMark()
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(s.color)
+                Text(s.label)
+                    .font(.headline.weight(.bold)).tracking(1.2)
+                    .foregroundStyle(s.color)
+                Spacer()
+            }
+            Text(anchorWatch.swingDiagnosis(settings: settings))
+                .font(.caption).foregroundStyle(Color.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
-        .background(color.opacity(0.13),
+        .background(s.color.opacity(0.13),
                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .stroke(state == .dragging || state == .warning ? s.color : .clear, lineWidth: 1.5))
     }
+
+    private var alarmBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.white)
+            Text(anchorWatch.activeAlarms.map(\.rawValue).joined(separator: " · "))
+                .font(.system(size: 13, weight: .bold)).foregroundStyle(.white)
+                .lineLimit(2).minimumScaleFactor(0.8)
+            Spacer()
+            Button("Snooze") { anchorWatch.snooze(minutes: 15) }
+                .font(.system(size: 12, weight: .bold)).foregroundStyle(.black)
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(.white, in: Capsule())
+                .buttonStyle(.plain)
+                .pointerCursor()
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(Color.statusRed, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: Metrics
 
     private var metrics: some View {
         VStack(spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(String(format: "%.0f", anchorWatch.liveDistance))
                     .font(.system(size: 44, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(state == .dragging ? Color.statusRed
+                                     : state == .warning ? Color.statusOrange : Color.textPrimary)
                     .contentTransition(.numericText())
                 Text("m from anchor")
                     .font(.subheadline).foregroundStyle(Color.textSecondary)
@@ -306,25 +416,55 @@ struct AnchorSidePanel: View {
             }
             .frame(height: 6)
 
-            row("Bearing to anchor", String(format: "%.0f°", anchorWatch.liveBearing))
-            row("Alarm radius",      String(format: "%.0f m", settings.anchorRadius))
-            row("Max swing",         String(format: "%.0f m", anchorWatch.maxSwing))
-            row("Depth", signalK.depth > 0 ? String(format: "%.1f m", signalK.depth) : "—")
-            row("Wind", signalK.trueWindSpeed > 0
-                ? String(format: "%.1f kn  %.0f°", signalK.trueWindSpeed, signalK.trueWindDirection)
-                : "—")
+            row("Bearing to anchor", String(format: "%03.0f°", anchorWatch.liveBearing))
+            row("Alarm radius",
+                String(format: "%.0f m · max swing %.0f m", settings.anchorRadius, anchorWatch.maxSwing))
+            row("Depth", depthLabel)
+            row("Wind", windLabel, valueColor: windOverLimit ? .statusRed : .textPrimary)
+            row("Scope", scopeLabel)
             row("Position source",
                 signalK.boatPositionIsLive ? "Boat GPS"
-                : anchorWatch.freshDeviceCoord != nil ? "Device GPS" : "NO FIX",
+                : anchorWatch.freshDeviceCoord != nil ? "Mac GPS (backup)" : "NO FIX",
                 valueColor: signalK.boatPositionIsLive ? .textPrimary
                 : anchorWatch.freshDeviceCoord != nil ? .statusOrange : .statusRed)
-            Text(anchorWatch.swingDiagnosis(settings: settings))
-                .font(.caption).foregroundStyle(Color.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            if let b = SystemPower.battery() {
+                row("Mac battery",
+                    String(format: "%.0f%% · %@", b.level * 100, b.onAC ? "on power" : "ON BATTERY"),
+                    valueColor: b.onAC ? .textPrimary : .statusOrange)
+            }
         }
         .padding(14)
         .background(Color.white.opacity(0.04),
                     in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var depthLabel: String {
+        guard signalK.depth > 0 else { return "—" }
+        var s = String(format: "%.1f m", signalK.depth)
+        if let base = anchorWatch.depthBaseline {
+            let d = signalK.depth - base
+            if d >  0.3 { s += String(format: "  ↑ %.1f", abs(d)) }
+            else if d < -0.3 { s += String(format: "  ↓ %.1f", abs(d)) }
+            else { s += "  steady" }
+        }
+        return s
+    }
+
+    private var windLabel: String {
+        guard signalK.trueWindSpeed > 0 else { return "—" }
+        let shift = anchorWatch.windShift(settings: settings, signalK: signalK)
+        return String(format: "%.0f kt  %03.0f° · shift %+.0f°",
+                      signalK.trueWindSpeed, signalK.trueWindDirection, shift)
+    }
+
+    private var windOverLimit: Bool {
+        settings.anchorWindMax < 60 && signalK.trueWindSpeed > settings.anchorWindMax
+    }
+
+    private var scopeLabel: String {
+        guard settings.anchorRodeLength > 0, signalK.depth > 0.3 else { return "—" }
+        return String(format: "%.1f:1  (%.0f m rode)",
+                      settings.anchorRodeLength / signalK.depth, settings.anchorRodeLength)
     }
 
     private func row(_ label: String, _ value: String, valueColor: Color = .textPrimary) -> some View {
@@ -337,18 +477,38 @@ struct AnchorSidePanel: View {
         }
     }
 
-    private var alarmList: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ForEach(Array(anchorWatch.activeAlarms), id: \.self) { alarm in
-                Label(alarm.rawValue, systemImage: "exclamationmark.triangle.fill")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(Color.statusRed)
+    // MARK: Footer + actions
+
+    private var watchFooter: some View {
+        HStack(spacing: 10) {
+            if settings.anchorDropTime > 0 {
+                let since = Date(timeIntervalSince1970: settings.anchorDropTime)
+                Text("Since \(since.formatted(date: .omitted, time: .shortened)) · \(anchorWatch.minutesWatched(settings: settings)) min")
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(Color.textSecondary)
+            }
+            Spacer()
+            // Auto-learned swing: once the boat has shown its true swing for a
+            // while, offer to shrink the alarm circle to what was observed.
+            if let suggested = anchorWatch.observedSwingRadius(settings: settings),
+               anchorWatch.minutesWatched(settings: settings) >= 20,
+               suggested + 3 < settings.anchorRadius {
+                Button {
+                    settings.anchorRadius = max(5, min(200, suggested))
+                    settings.persist()
+                    Task { await piService.syncConfig(settings: settings) }
+                } label: {
+                    Label("Tighten to \(Int(suggested)) m", systemImage: "scope")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 8).padding(.vertical, 5)
+                        .background(Color.accentCyan, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .pointerCursor()
+                .help("Shrink the alarm radius to the swing actually observed")
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Color.statusRed.opacity(0.12),
-                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     @ViewBuilder private var actions: some View {
@@ -362,37 +522,209 @@ struct AnchorSidePanel: View {
             .buttonStyle(.borderedProminent).tint(Color.statusRed)
             .pointerCursor()
         }
+        sheetButtons
         Button {
-            anchorWatch.raiseAnchor(settings: settings)
+            confirmRaise = true
         } label: {
             Label("Raise anchor", systemImage: "arrow.up.circle")
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.bordered)
         .pointerCursor()
+        .confirmationDialog("Raise the anchor?", isPresented: $confirmRaise,
+                            titleVisibility: .visible) {
+            Button("Raise Anchor — stop the watch", role: .destructive) {
+                anchorWatch.raiseAnchor(settings: settings)
+            }
+            Button("Keep Watching", role: .cancel) {}
+        } message: {
+            Text("This stops the anchor watch and all its alarms.")
+        }
     }
+
+    private var sheetButtons: some View {
+        HStack(spacing: 8) {
+            Button {
+                anchorWatch.recenterAnchor(settings: settings, signalK: signalK)
+                focusChart(on: .init(latitude: settings.anchorLat, longitude: settings.anchorLon))
+            } label: {
+                Label("Re-centre", systemImage: "scope").frame(maxWidth: .infinity)
+            }
+            .disabled(settings.anchorRodeLength <= 0 || !hasLiveFix)
+            .help("Settled back on the chain? Shift the anchor up-rode from where the boat lies now — the accurate centre.")
+            Button {
+                showSafeTonight = true
+            } label: {
+                Label("Tonight", systemImage: "moon.stars.fill").frame(maxWidth: .infinity)
+            }
+            .help("Tonight's wind forecast verdict for this anchorage")
+            Button {
+                showAnchorSettings = true
+            } label: {
+                Label("Alarms", systemImage: "slider.horizontal.3").frame(maxWidth: .infinity)
+            }
+            .help("Anchor + forecast alarm settings")
+        }
+        .buttonStyle(.bordered)
+        .pointerCursor()
+    }
+
+    // MARK: Recent events
+
+    private var logCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("RECENT EVENTS")
+                .font(.system(size: 10, weight: .semibold)).tracking(0.8)
+                .foregroundStyle(Color.textTertiary)
+            ForEach(anchorWatch.alarmLog.prefix(6)) { event in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(event.time.formatted(date: .omitted, time: .shortened))
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundStyle(Color.textTertiary)
+                    Text(event.detail)
+                        .font(.caption).foregroundStyle(Color.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color.white.opacity(0.03),
+                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    // MARK: Planning (pre-drop) — the whole swinging-anchor "wizard" inline:
+    // set the rode, see the circle, one click to drop. Re-centre afterwards
+    // replaces the old walk-through's fall-back/recompute steps.
 
     private var planning: some View {
         VStack(spacing: 12) {
-            Text("Anchor mode: pick the spot on the chart, check the forecast, then drop.")
-                .font(.callout).foregroundStyle(Color.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Button {
-                anchorWatch.dropAnchor(settings: settings, signalK: signalK)
-            } label: {
-                HStack {
-                    AnchorMark().frame(width: 16, height: 16)
-                    Text("Drop Anchor Here")
+            // Live conditions + tonight's verdict, mirroring the iOS console.
+            HStack(spacing: 8) {
+                planStat("DEPTH", signalK.depth > 0 ? String(format: "%.1f m", signalK.depth) : "—")
+                planStat("WIND", String(format: "%.0f kt", signalK.trueWindSpeed),
+                         sub: String(format: "%03.0f°", signalK.trueWindDirection))
+                Button { showSafeTonight = true } label: {
+                    let v = AnchorForecast.verdict(forecast: predictWind.forecast, settings: settings)
+                    planStat("TONIGHT", v.word, valueColor: v.color)
                 }
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.plain)
+                .pointerCursor()
+                .help("Tonight's wind forecast verdict — click for details")
             }
-            .buttonStyle(.borderedProminent)
+
+            VStack(spacing: 6) {
+                HStack {
+                    Text("Rode to pay out").font(.caption).foregroundStyle(Color.textSecondary)
+                    Spacer()
+                    Text(String(format: "%.0f m", rode))
+                        .font(.system(.callout, design: .rounded).weight(.semibold))
+                        .foregroundStyle(Color.textPrimary)
+                }
+                Slider(value: $rode, in: 5...120, step: 5).tint(Color.statusOrange)
+                HStack {
+                    Text(scopePreview).font(.caption).foregroundStyle(Color.textTertiary)
+                    Spacer()
+                    Text("Watch radius \(Int(plannedRadius)) m")
+                        .font(.caption.weight(.semibold)).foregroundStyle(Color.statusOrange)
+                }
+            }
+            .padding(12)
+            .background(Color.white.opacity(0.04),
+                        in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            Button { dropNow() } label: {
+                HStack(spacing: 7) {
+                    AnchorMark().frame(width: 18, height: 18)
+                    Text("Drop Anchor")
+                }
+                .font(.headline).foregroundStyle(.black)
+                .frame(maxWidth: .infinity).padding(.vertical, 14)
+                .background(hasLiveFix ? Color.statusOrange : Color.statusOrange.opacity(0.4),
+                            in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+            .buttonStyle(.plain)
             .pointerCursor()
-            .disabled(!signalK.boatPositionIsLive && anchorWatch.freshDeviceCoord == nil)
+            .disabled(!hasLiveFix)
+            .help("Arm the watch right here — swing circle sized from rode + depth")
+
+            if !hasLiveFix {
+                Label("Waiting for a GPS fix (boat feed or this Mac).",
+                      systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption).foregroundStyle(Color.statusOrange)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Text("Settle back on the chain, then hit Re-centre to shift the anchor up-rode. Right-click the chart for Set Anchor Here.")
+                .font(.caption2).foregroundStyle(Color.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 8) {
+                Button { showWizard = true } label: {
+                    Label("Fixed mooring", systemImage: "arrow.left.and.right.circle")
+                        .frame(maxWidth: .infinity)
+                }
+                .help("Stern-to, two anchors, lines ashore — tight watch box, no swing circle")
+                Button { showAnchorSettings = true } label: {
+                    Label("Alarms", systemImage: "slider.horizontal.3")
+                        .frame(maxWidth: .infinity)
+                }
+                .help("Anchor + forecast alarm settings")
+            }
+            .buttonStyle(.bordered)
+            .pointerCursor()
         }
-        .padding(14)
+    }
+
+    private var plannedRadius: Double {
+        let scope = AnchorWatchService.horizontalScope(rode: rode, depth: signalK.depth)
+        return max(5, min(100, (scope + settings.anchorBowOffset + 6).rounded()))
+    }
+
+    private var scopePreview: String {
+        signalK.depth > 0.3
+            ? String(format: "Scope %.1f:1 at %.1f m depth", rode / signalK.depth, signalK.depth)
+            : "Depth unknown — radius from rode alone"
+    }
+
+    private func dropNow() {
+        settings.anchorRodeLength  = rode
+        settings.anchorWarnRadius  = 0            // auto (75 %)
+        settings.anchorRadius      = plannedRadius
+        guard let pos = anchorWatch.dropAnchorAtCurrentPosition(settings: settings,
+                                                                signalK: signalK) else { return }
+        focusChart(on: pos)
+        Task { await predictWind.armForecastForAnchor(settings: settings) }
+    }
+
+    private func planStat(_ label: String, _ value: String, sub: String? = nil,
+                          valueColor: Color = .textPrimary) -> some View {
+        VStack(spacing: 2) {
+            Text(label)
+                .font(.system(size: 9, weight: .semibold)).tracking(0.6)
+                .foregroundStyle(Color.textTertiary)
+            Text(value)
+                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                .foregroundStyle(valueColor)
+                .lineLimit(1).minimumScaleFactor(0.7)
+            if let sub {
+                Text(sub)
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Color.textTertiary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
         .background(Color.white.opacity(0.04),
-                    in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    // MARK: Drop plumbing
+
+    private func focusChart(on coord: CLLocationCoordinate2D) {
+        let span = MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+        chartBridge.zoomProxy?.mapView?.setRegion(.init(center: coord, span: span),
+                                                  animated: true)
     }
 }
 

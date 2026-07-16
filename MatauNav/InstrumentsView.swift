@@ -164,11 +164,12 @@ struct InstrumentsView: View {
     /// Fetches the Pi's rolling 60-min buffer and pre-populates history.
     /// Called once on view appear — silently no-ops if the Pi is unreachable.
     private func fetchPiHistory() async {
-        let host = settings.signalKHost
-        guard !host.isEmpty,
-              let url = URL(string: "http://\(host):3001/history") else { return }
+        let base = signalK.piBase(port: 3001)   // follows the remote failover
+        guard let url = URL(string: "\(base)/history") else { return }
+        var req = URLRequest(url: url, timeoutInterval: 8)
+        for (k, v) in signalK.piHeaders(for: base) { req.setValue(v, forHTTPHeaderField: k) }
 
-        guard let (data, _) = try? await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 8)),
+        guard let (data, _) = try? await URLSession.shared.data(for: req),
               let json     = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let samples  = json["samples"] as? [[String: Any]] else { return }
 

@@ -6,7 +6,11 @@ struct SetupView: View {
     @Environment(AnchorPiService.self)   private var piService
     @Environment(PredictWindService.self) private var predictWind
 
-    @State private var hostInput:       String = ""
+    @State private var hostInput:          String = ""
+    @State private var tailscaleInput:     String = ""
+    @State private var remoteDomainInput:  String = ""
+    @State private var cfAccessIdInput:    String = ""
+    @State private var cfAccessSecretInput: String = ""
     @State private var portInput:       String = ""
     @State private var useTLSInput:     Bool   = false
     @State private var usernameInput:   String = ""
@@ -49,8 +53,12 @@ struct SetupView: View {
             .navigationBarTitleDisplayMode(.large)
         }
         .onAppear {
-            hostInput     = settings.signalKHost
-            portInput     = String(settings.signalKPort)
+            hostInput           = settings.signalKHost
+            tailscaleInput      = settings.tailscaleHost
+            remoteDomainInput   = settings.remoteDomain
+            cfAccessIdInput     = settings.cfAccessClientId
+            cfAccessSecretInput = CFAccessKeychain.loadSecret() ?? ""
+            portInput      = String(settings.signalKPort)
             useTLSInput   = settings.signalKUseTLS
             let creds     = SignalKKeychain.loadCredentials()
             usernameInput = creds?.username ?? ""
@@ -86,7 +94,7 @@ struct SetupView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(signalK.state.label)
+                Text(connectionLabel)
                     .font(.headline)
                     .foregroundStyle(Color.textPrimary)
                 if let info = signalK.serverInfo {
@@ -172,6 +180,49 @@ struct SetupView: View {
                 .keyboardType(.URL)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
+
+            VStack(alignment: .leading, spacing: 6) {
+                InputField(label: "Tailscale fallback",
+                           placeholder: "100.100.220.67", text: $tailscaleInput)
+                    .keyboardType(.URL)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                Text("Used automatically when the address above stops answering — instruments, anchor watch and all Pi services switch to the tailnet, and back when the boat Wi-Fi returns. Leave empty to disable.")
+                    .font(.caption2)
+                    .foregroundStyle(Color.textTertiary)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                InputField(label: "Remote bridge domain",
+                           placeholder: "gleser.ai", text: $remoteDomainInput)
+                    .keyboardType(.URL)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                InputField(label: "Access client ID",
+                           placeholder: "xxxxx.access", text: $cfAccessIdInput)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Access client secret")
+                        .font(.caption)
+                        .foregroundStyle(Color.textSecondary)
+                    SecureField("••••••••", text: $cfAccessSecretInput)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 11)
+                        .background(Color.bgElevated)
+                        .foregroundStyle(Color.textPrimary)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.borderColor, lineWidth: 0.5)
+                        )
+                }
+                Text("Last-resort fallback over the public internet (Cloudflare Tunnel at matau-<port>.<domain>) — plain HTTPS, so it works with NordVPN and needs no VPN app. The Access service token keeps strangers out; the secret is stored in the Keychain.")
+                    .font(.caption2)
+                    .foregroundStyle(Color.textTertiary)
+            }
 
             InputField(label: "Port", placeholder: "3000", text: $portInput)
                 .keyboardType(.numberPad)
@@ -298,7 +349,7 @@ struct SetupView: View {
                     Divider().background(Color.borderColor).padding(.vertical, 10)
                     InfoRow(label: "SignalK Version", value: info.version)
                     Divider().background(Color.borderColor).padding(.vertical, 10)
-                    InfoRow(label: "Server", value: "\(signalK.host):\(signalK.port)")
+                    InfoRow(label: "Server", value: "\(signalK.activeHost):\(signalK.port)")
                     Divider().background(Color.borderColor).padding(.vertical, 10)
                     InfoRow(label: "Transport", value: signalK.useTLS ? "WebSocket (wss)" : "WebSocket (ws)")
                 }
@@ -336,12 +387,12 @@ struct SetupView: View {
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
 
-            if piService.onTailscale {
+            if piService.onTailscale || piService.onRemote {
                 HStack(spacing: 6) {
-                    Image(systemName: "shield.fill")
+                    Image(systemName: piService.onRemote ? "cloud.fill" : "shield.fill")
                         .font(.caption)
                         .foregroundStyle(Color.statusOrange)
-                    Text("Using Tailscale fallback")
+                    Text(piService.onRemote ? "Using remote bridge" : "Using Tailscale fallback")
                         .font(.caption)
                         .foregroundStyle(Color.statusOrange)
                 }
@@ -385,9 +436,23 @@ struct SetupView: View {
         }
     }
 
+    private var connectionLabel: String {
+        guard signalK.state.isConnected else { return signalK.state.label }
+        switch signalK.activePath {
+        case .local:     return signalK.state.label
+        case .tailscale: return "Connected · Tailscale"
+        case .remote:    return "Connected · Remote"
+        }
+    }
+
     private var piStatusLabel: String {
         switch piService.connectionState {
-        case .connected:    piService.onTailscale ? "Tailscale" : "Connected"
+        case .connected:
+            switch piService.activeKind {
+            case .local:     "Connected"
+            case .tailscale: "Tailscale"
+            case .remote:    "Remote"
+            }
         case .disconnected: "Unreachable"
         case .unknown:      settings.effectiveAnchorPiURL.isEmpty ? "Not configured" : "Checking…"
         }
@@ -654,13 +719,26 @@ struct SetupView: View {
     // MARK: - Helpers
 
     private func applyAndConnect() {
-        let host = hostInput.trimmingCharacters(in: .whitespaces)
-        let port = Int(portInput) ?? 3000
+        let host      = hostInput.trimmingCharacters(in: .whitespaces)
+        let tailscale = tailscaleInput.trimmingCharacters(in: .whitespaces)
+        let remote    = remoteDomainInput.trimmingCharacters(in: .whitespaces)
+        let cfId      = cfAccessIdInput.trimmingCharacters(in: .whitespaces)
+        let cfSecret  = cfAccessSecretInput.trimmingCharacters(in: .whitespaces)
+        let port      = Int(portInput) ?? 3000
 
-        settings.signalKHost   = host
-        settings.signalKPort   = port
-        settings.signalKUseTLS = useTLSInput
+        settings.signalKHost      = host
+        settings.tailscaleHost    = tailscale
+        settings.remoteDomain     = remote
+        settings.cfAccessClientId = cfId
+        settings.signalKPort      = port
+        settings.signalKUseTLS    = useTLSInput
         settings.persist()
+
+        if cfSecret.isEmpty {
+            CFAccessKeychain.clear()
+        } else {
+            CFAccessKeychain.save(secret: cfSecret)
+        }
 
         // Persist credentials to Keychain (never UserDefaults)
         let user = usernameInput.trimmingCharacters(in: .whitespaces)
@@ -670,9 +748,13 @@ struct SetupView: View {
             SignalKKeychain.save(username: user, password: passwordInput)
         }
 
-        signalK.host   = host
-        signalK.port   = port
-        signalK.useTLS = useTLSInput
+        signalK.host                 = host
+        signalK.tailscaleHost        = tailscale
+        signalK.remoteDomain         = remote
+        signalK.cfAccessClientId     = cfId
+        signalK.cfAccessClientSecret = cfSecret
+        signalK.port                 = port
+        signalK.useTLS               = useTLSInput
         Task { await signalK.connect() }
     }
 }

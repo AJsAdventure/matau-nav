@@ -141,16 +141,20 @@ final class PiStateService {
     func refreshNow() async { await poll() }
 
     private func poll() async {
-        // Re-derive the URL from live settings each poll: the host can change
-        // in Setup at runtime, and a baked-in URL kept polling the OLD Pi
-        // forever behind a green SignalK chip (stale AIS/CPA/route, silently).
-        if let host = settings?.signalKHost, !host.isEmpty {
+        // Re-derive the URL each poll: the host can change in Setup at
+        // runtime, and SignalKService may have failed over to Tailscale or
+        // the public bridge — this service must follow it or the anchor
+        // console shows live instruments next to a dead AIS/route panel.
+        if let sk = signalK {
+            baseURL = sk.piBase(port: 10114)
+        } else if let host = settings?.signalKHost, !host.isEmpty {
             baseURL = "http://\(host):10114"
         }
         guard let url = URL(string: "\(baseURL)/state") else { return }
         do {
             var req = URLRequest(url: url, timeoutInterval: 4)
             req.cachePolicy = .reloadIgnoringLocalCacheData
+            applyBoatHeaders(&req)
             let (data, resp) = try await URLSession.shared.data(for: req)
             guard (resp as? HTTPURLResponse)?.statusCode == 200 else {
                 lastError = "HTTP \( (resp as? HTTPURLResponse)?.statusCode ?? 0 )"
@@ -304,6 +308,7 @@ final class PiStateService {
         guard let url = URL(string: "\(baseURL)/autopilot/\(cmd)") else { return false }
         var req = URLRequest(url: url, timeoutInterval: 5)
         req.httpMethod = "POST"
+        applyBoatHeaders(&req)
         do {
             let (data, resp) = try await URLSession.shared.data(for: req)
             let ok = (resp as? HTTPURLResponse)?.statusCode == 200
@@ -330,12 +335,19 @@ final class PiStateService {
 
     // MARK: HTTP plumbing
 
+    /// Cloudflare Access headers when baseURL points at the public bridge.
+    private func applyBoatHeaders(_ req: inout URLRequest) {
+        guard let s = settings, let base = req.url?.absoluteString else { return }
+        for (k, v) in s.boatAuthHeaders(forBase: base) { req.setValue(v, forHTTPHeaderField: k) }
+    }
+
     private func put(_ path: String, body: [String: Any]) async {
         guard let url = URL(string: "\(baseURL)\(path)") else { return }
         var req = URLRequest(url: url, timeoutInterval: 4)
         req.httpMethod = "PUT"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        applyBoatHeaders(&req)
         _ = try? await URLSession.shared.data(for: req)
         await poll()
     }
@@ -344,6 +356,7 @@ final class PiStateService {
         guard let url = URL(string: "\(baseURL)\(path)") else { return }
         var req = URLRequest(url: url, timeoutInterval: 4)
         req.httpMethod = "DELETE"
+        applyBoatHeaders(&req)
         _ = try? await URLSession.shared.data(for: req)
         await poll()
     }
@@ -352,6 +365,7 @@ final class PiStateService {
         guard let url = URL(string: "\(baseURL)\(path)") else { return }
         var req = URLRequest(url: url, timeoutInterval: 4)
         req.httpMethod = "POST"
+        applyBoatHeaders(&req)
         _ = try? await URLSession.shared.data(for: req)
         await poll()
     }

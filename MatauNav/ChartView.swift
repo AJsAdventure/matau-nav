@@ -188,7 +188,7 @@ struct ChartView: View {
             // Pull Pi-recorded GPS tracks on open, then again every 60 s so
             // newly-recorded points show up while sailing.
             while !Task.isCancelled {
-                await tracks.fetchPiTracks(baseURL: signalK.baseURL)
+                await tracks.fetchPiTracks(base: signalK.piBase(port: 10113), headers: signalK.piHeaders(for: signalK.piBase(port: 10113)))
                 try? await Task.sleep(for: .seconds(60))
             }
         }
@@ -346,41 +346,54 @@ struct ChartView: View {
 
     // MARK: - Bottom bar
 
+    /// On the Mac the chart spans the whole window, so full-width popup bars
+    /// read as banners and collide with the floating side panels — inset them.
+    private var popupSideMargin: CGFloat {
+        #if os(macOS)
+        return 150
+        #else
+        return 0
+        #endif
+    }
+
     private var bottomBar: some View {
         VStack(spacing: 8) {
-            if settings.mobActive { mobBanner }
-            if let cpa = topDanger { cpaBanner(cpa) }
-            if positionSource != .boat { positionSourceBanner }
-            if settings.chartShowPredictWindAIS, predictWind.aisIsStale { staleAISBanner }
-            // Transient readouts (distance measure / waypoint / depth probe)
-            // sit ABOVE the anchor console so the measurement popup is never
-            // hidden behind the taller anchor panel — from the top it reads
-            // measure popup first, then the anchor overlay.
-            if let from = measureFromCoord, let to = measureToCoord {
-                measureReadout(from: from, to: to)
-            } else if let wp = activeWaypoint, settings.activeRoute == nil {
-                waypointReadout(wp: wp)
-            } else if measureMode {
-                Text("Tap two points to measure distance")
-                    .font(.caption)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 14).padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: Capsule())
+            Group {
+                if settings.mobActive { mobBanner }
+                if let cpa = topDanger { cpaBanner(cpa) }
+                if positionSource != .boat { positionSourceBanner }
+                if settings.chartShowPredictWindAIS, predictWind.aisIsStale { staleAISBanner }
+                // Transient readouts (distance measure / waypoint / depth probe)
+                // sit ABOVE the anchor console so the measurement popup is never
+                // hidden behind the taller anchor panel — from the top it reads
+                // measure popup first, then the anchor overlay.
+                if let from = measureFromCoord, let to = measureToCoord {
+                    measureReadout(from: from, to: to)
+                } else if let wp = activeWaypoint, settings.activeRoute == nil {
+                    waypointReadout(wp: wp)
+                } else if measureMode {
+                    Text("Tap two points to measure distance")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(.ultraThinMaterial, in: Capsule())
+                }
+                if let pd = probedDepth, let pc = probedDepthCoord {
+                    probedDepthChip(depth: pd, coord: pc)
+                }
+                // The macOS panel shell shows the anchor console in its left
+                // panel — don't render it twice.
+                if settings.isAnchorMode && !macPanelShell { anchorConsole }
+                if !settings.isAnchorMode, let route = settings.activeRoute, let leg = route.activeWaypoint {
+                    routeProgressBar(route: route, leg: leg)
+                } else if let route = settings.activeRoute, route.activeWaypoint == nil {
+                    // Route completed (legIndex ran past the last waypoint): the
+                    // progress bar is gone but the route still draws on the chart —
+                    // give it an explicit dismissal.
+                    routeFinishedBar(route: route)
+                }
             }
-            if let pd = probedDepth, let pc = probedDepthCoord {
-                probedDepthChip(depth: pd, coord: pc)
-            }
-            // The macOS panel shell shows the anchor console in its left
-            // panel — don't render it twice.
-            if settings.isAnchorMode && !macPanelShell { anchorConsole }
-            if !settings.isAnchorMode, let route = settings.activeRoute, let leg = route.activeWaypoint {
-                routeProgressBar(route: route, leg: leg)
-            } else if let route = settings.activeRoute, route.activeWaypoint == nil {
-                // Route completed (legIndex ran past the last waypoint): the
-                // progress bar is gone but the route still draws on the chart —
-                // give it an explicit dismissal.
-                routeFinishedBar(route: route)
-            }
+            .padding(.horizontal, popupSideMargin)
             HStack(spacing: 8) {
                 if settings.chartShowSetDrift, !settings.isAnchorMode, let sd = setDriftReadout {
                     Text(sd)
@@ -634,16 +647,11 @@ struct ChartView: View {
     private func startAnchorWizard() { showAnchorWizard = true }
 
     /// One-tap drop at the current bow position — a quick swinging anchor for
-    /// when there's no time for the wizard.
+    /// when there's no time for the wizard. The service picks the freshest
+    /// trustworthy fix (live boat feed, else device GPS) and sets everything.
     private func dropAnchorNow() {
-        let pos = anchorWatch.dropPosition(signalK: signalK, settings: settings)
-        guard pos.latitude != 0 || pos.longitude != 0 else { return }
-        settings.anchorMooringType = "swinging"
-        settings.anchorLat = pos.latitude
-        settings.anchorLon = pos.longitude
-        if settings.anchorRadius <= 0 { settings.anchorRadius = 30 }
-        anchorWatch.dropAnchor(settings: settings, signalK: signalK)
-        settings.persist()
+        guard let pos = anchorWatch.dropAnchorAtCurrentPosition(settings: settings,
+                                                                signalK: signalK) else { return }
         let span = MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
         zoomProxy.mapView?.setRegion(.init(center: pos, span: span), animated: true)
         Task { await triggerForecastForAnchor() }
@@ -824,6 +832,23 @@ struct ChartView: View {
 
     // MARK: Route progress
 
+    /// Velocity made good toward a bearing (kn, signed): the component of SOG
+    /// that actually closes the distance. Sailing at 6 kn on a 60° offset
+    /// closes at 3 kn — dividing distance by SOG understates every ETA unless
+    /// the waypoint is dead ahead. Negative = sailing away.
+    private func vmgKn(towardBearing brg: Double) -> Double {
+        signalK.speedOverGround * cos((signalK.courseOverGround - brg) * .pi / 180)
+    }
+
+    /// "1h 05m" / "12 min" time-to-go from distance and closing speed,
+    /// or "—" when the boat isn't actually closing (VMG ≤ 0.1 kn).
+    private func ttgString(nm: Double, vmg: Double) -> String {
+        guard vmg > 0.1 else { return "—" }
+        let mins = Int((nm / vmg * 60).rounded())
+        if mins >= 60 { return String(format: "%dh %02dm", mins / 60, mins % 60) }
+        return "\(mins) min"
+    }
+
     private func routeProgressBar(route: Route, leg: RouteWaypoint) -> some View {
         let here = CLLocationCoordinate2D(latitude: signalK.latitude, longitude: signalK.longitude)
         let to   = CLLocationCoordinate2D(latitude: leg.lat, longitude: leg.lon)
@@ -837,20 +862,17 @@ struct ChartView: View {
             total += NavMath.distanceNm(prev, next)
             prev = next
         }
-        let etaStr: String = {
-            guard signalK.speedOverGround > 0.1 else { return "—" }
-            let hrs = total / signalK.speedOverGround
-            let mins = Int((hrs * 60).rounded())
-            if mins >= 60 { return String(format: "%dh %02dm", mins / 60, mins % 60) }
-            return "\(mins) min"
-        }()
+        let vmg    = vmgKn(towardBearing: brg)
+        let etaStr = ttgString(nm: total, vmg: vmg)
         return HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Leg \(route.legIndex + 1)/\(route.waypoints.count) · \(leg.name)")
                     .font(.caption).foregroundStyle(.white.opacity(0.75))
-                Text(String(format: "%.2f nm · %03.0f°T  ·  total %.1f nm  ·  %@", nm, brg, total, etaStr))
+                Text(String(format: "%.2f nm · %03.0f°T · VMG %.1f kn · total %.1f nm · %@",
+                            nm, brg, vmg, total, etaStr))
                     .font(.system(size: 13, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.white)
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
             Spacer()
             Button {
@@ -1122,21 +1144,17 @@ struct ChartView: View {
     }
 
     private func waypointReadout(wp: (lat: Double, lon: Double, name: String)) -> some View {
-        let nm = signalK.distanceTo(lat: wp.lat, lon: wp.lon)
+        let nm  = signalK.distanceTo(lat: wp.lat, lon: wp.lon)
         let brg = signalK.bearing(toLat: wp.lat, lon2: wp.lon)
-        let ttg: String = {
-            guard signalK.speedOverGround > 0.1 else { return "—" }
-            let hrs = nm / signalK.speedOverGround
-            let mins = Int((hrs * 60).rounded())
-            if mins >= 60 { return String(format: "%dh %02dm", mins / 60, mins % 60) }
-            return "\(mins) min"
-        }()
+        let vmg = vmgKn(towardBearing: brg)
+        let ttg = ttgString(nm: nm, vmg: vmg)
         return HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(wp.name).font(.caption).foregroundStyle(.white.opacity(0.75))
-                Text(String(format: "%.2f nm · %03.0f°T · ETA %@", nm, brg, ttg))
+                Text(String(format: "%.2f nm · %03.0f°T · VMG %.1f kn · ETA %@", nm, brg, vmg, ttg))
                     .font(.system(size: 14, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.white)
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
             Spacer()
             Button {
@@ -1324,17 +1342,7 @@ struct ChartView: View {
     // MARK: - Forecast trigger
 
     private func triggerForecastForAnchor() async {
-        let piURL = settings.predictWindPiURL.isEmpty
-            ? settings.anchorPiURL
-                .replacingOccurrences(of: ":10112", with: ":10115")
-                .replacingOccurrences(of: ":10114", with: ":10115")
-            : settings.predictWindPiURL
-        guard !piURL.isEmpty else { return }
-        predictWind.configure(piURL: piURL)
-        let locId = await predictWind.setForecastLocation(lat: settings.anchorLat, lon: settings.anchorLon)
-        if settings.forecastAlarmEnabled, let lid = locId {
-            await predictWind.setForecastAlarm(enabled: true, locationId: lid, settings: settings)
-        }
+        await predictWind.armForecastForAnchor(settings: settings)
     }
 }
 

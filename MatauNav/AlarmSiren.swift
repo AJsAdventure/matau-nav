@@ -24,6 +24,12 @@ final class AlarmSiren {
     /// isPlaying reads false and it restarts here.
     func acquire(_ source: String) {
         holders.insert(source)
+        #if os(macOS)
+        // A muted / turned-down Mac must not sleep through a ringing alarm —
+        // while the siren is demanded, keep the output unmuted and above a
+        // volume floor (~2 s cadence). Snooze is the sanctioned silence.
+        SystemAudio.ensureAudible()
+        #endif
         if !AlarmPlayer.shared.isPlaying { AlarmPlayer.shared.start() }
     }
 

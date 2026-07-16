@@ -21,7 +21,7 @@ extension AnchorWatchService {
         case windShift  = "Wind Shift"
         case depth      = "Depth Change"
         case gpsLoss    = "GPS Signal Lost"
-        case lowBattery = "Phone Battery Low"
+        case lowBattery = "Battery Low"
     }
 
     /// Whether an alarm is loud enough to wake a sleeping crew. Loud alarms
@@ -112,6 +112,17 @@ final class AnchorWatchService: NSObject {
     private weak var settingsRef: AppSettings?
     private weak var signalKRef:  SignalKService?
 
+    /// Fired after every drop/raise so the app layer can push the new state
+    /// to the independent Pi alarm daemon. Wired by AppMonitor — the daemon
+    /// is the backstop when this process dies, so it must never be left
+    /// watching a stale anchorage.
+    var onWatchStateChanged: (() -> Void)?
+
+    /// Fired when the crew snoozes, with the snooze minutes — one Silence
+    /// action must quiet every alarm surface (app siren, daemon mirror,
+    /// Pi ntfy/buzzer).
+    var onSnooze: ((Int) -> Void)?
+
     override init() {
         super.init()
         locationManager.delegate = self
@@ -146,17 +157,66 @@ final class AnchorWatchService: NSObject {
         depthBaseline = signalK.depth > 0 ? signalK.depth : nil
         breachStart   = nil
         maxSwing      = 0
+        // A fresh watch must never inherit a snooze from the previous one —
+        // snooze at 03:00, raise, re-anchor: the new watch would be mute.
+        snoozedUntil  = nil
         settings.persist()
         startWatch(settings: settings)
         requestPermissions()
-        // Keep the Mac awake for the duration of the watch (no-op on iOS).
-        AppActivity.shared.beginAnchorWatch()
         // Seed the track + live metrics so the swing trail appears immediately.
-        track.append(TrackPoint(lat: signalK.latitude, lon: signalK.longitude, time: Date()))
-        lastTrackTime = Date()
-        updateLiveMetrics(from: .init(latitude: signalK.latitude, longitude: signalK.longitude),
-                          settings: settings)
+        // Use the best CURRENT fix — with the boat feed down, signalK lat/lon
+        // can be stale or (0,0), which would seed a null-island breadcrumb.
+        let seed = bestFix(signalK: signalK)?.coord
+            ?? CLLocationCoordinate2D(latitude: signalK.latitude, longitude: signalK.longitude)
+        if seed.latitude != 0 || seed.longitude != 0 {
+            track.append(TrackPoint(lat: seed.latitude, lon: seed.longitude, time: Date()))
+            lastTrackTime = Date()
+            updateLiveMetrics(from: seed, settings: settings)
+            // Arming while already outside the circle (e.g. "restore
+            // anchorage" from far away) deserves a visible trace.
+            if liveDistance > settings.anchorRadius {
+                alarmLog.insert(AlarmEvent(type: .radius, time: Date(),
+                    detail: String(format: "Watch armed %.0f m from the anchor — outside the %.0f m circle.",
+                                   liveDistance, settings.anchorRadius)), at: 0)
+            }
+        }
         saveTrack()
+        onWatchStateChanged?()
+    }
+
+    /// One-call "drop the hook right here" for UI without map context (menu
+    /// bar, ⌘⇧D, side panel). Picks the freshest trustworthy fix (live boat
+    /// feed, else a fresh device fix), projects the bow offset ahead of the
+    /// GPS antenna, and arms a swinging watch around that point.
+    ///
+    /// This is the only safe way to drop without supplying a coordinate:
+    /// calling dropAnchor() directly leaves anchorLat/anchorLon at whatever
+    /// the LAST anchorage was (or 0,0) and the watch arms around the wrong
+    /// spot. Returns the anchor coordinate, or nil when there is no usable fix.
+    @discardableResult
+    func dropAnchorAtCurrentPosition(settings: AppSettings,
+                                     signalK: SignalKService) -> CLLocationCoordinate2D? {
+        let base: CLLocationCoordinate2D
+        if signalK.boatPositionIsLive, signalK.latitude != 0 || signalK.longitude != 0 {
+            base = CLLocationCoordinate2D(latitude: signalK.latitude, longitude: signalK.longitude)
+        } else if let device = freshDeviceCoord {
+            base = device
+        } else {
+            return nil
+        }
+        var pos = base
+        if settings.anchorBowOffset > 0, signalK.headingMagnetic >= 0 {
+            pos = NavMath.destination(from: base,
+                                      bearingDeg: signalK.headingMagnetic,
+                                      distanceM: settings.anchorBowOffset)
+        }
+        settings.anchorMooringType = "swinging"
+        settings.anchorLat = pos.latitude
+        settings.anchorLon = pos.longitude
+        if settings.anchorRadius <= 0 { settings.anchorRadius = 30 }
+        dropAnchor(settings: settings, signalK: signalK)
+        settings.persist()
+        return pos
     }
 
     func raiseAnchor(settings: AppSettings) {
@@ -168,9 +228,39 @@ final class AnchorWatchService: NSObject {
         breachStart   = nil
         maxSwing      = 0
         liveDistance  = 0
+        snoozedUntil  = nil
         if loudActive { AlarmSiren.shared.release("anchor-watch"); loudActive = false }
         // Release the sleep-prevention assertion (no-op on iOS).
         AppActivity.shared.endAnchorWatch()
+        onWatchStateChanged?()
+    }
+
+    /// Shift the anchor up-rode from where the boat lies now — the accurate
+    /// centre once the chain is stretched (the wizard's "recompute", as a
+    /// one-click action after a quick drop). Projects toward the old anchor
+    /// point when meaningfully away from it, else upwind. Keeps the alarm
+    /// radius, re-arms the geofence, pushes the new position to the Pi.
+    func recenterAnchor(settings: AppSettings, signalK: SignalKService) {
+        guard settings.anchorActive, let fix = bestFix(signalK: signalK) else { return }
+        let scope = Self.horizontalScope(rode: settings.anchorRodeLength, depth: signalK.depth)
+        guard scope > 0 else { return }
+        let boat   = fix.coord
+        let anchor = CLLocationCoordinate2D(latitude: settings.anchorLat, longitude: settings.anchorLon)
+        var bearing = signalK.trueWindDirection
+        if distanceMeters(boat, anchor) > 5 { bearing = NavMath.bearingDeg(boat, anchor) }
+        let newAnchor = NavMath.destination(from: boat, bearingDeg: bearing,
+                                            distanceM: scope + settings.anchorBowOffset)
+        settings.anchorLat = newAnchor.latitude
+        settings.anchorLon = newAnchor.longitude
+        settings.persist()
+        breachStart = nil
+        updateLiveMetrics(from: boat, settings: settings)
+        maxSwing = liveDistance
+        startWatch(settings: settings)     // re-centre the geofence
+        alarmLog.insert(AlarmEvent(type: .radius, time: Date(),
+            detail: String(format: "Anchor re-centred %.0f m up-rode of the boat.",
+                           scope + settings.anchorBowOffset)), at: 0)
+        onWatchStateChanged?()
     }
 
     // MARK: - Holding state
@@ -225,6 +315,27 @@ final class AnchorWatchService: NSObject {
         guard settings.anchorActive else { return }
         settingsRef = settings
         signalKRef  = signalK
+        // Corrupt-state guard: (0,0) is the app-wide "no fix" sentinel, never
+        // a real anchorage. A watch armed there (legacy bug, bad restore)
+        // would scream DRAGGING from thousands of km away — disable it and
+        // say so instead.
+        if settings.anchorLat == 0, settings.anchorLon == 0 {
+            settings.anchorActive = false
+            settings.persist()
+            stopWatch()
+            activeAlarms = []
+            alarmLog.insert(AlarmEvent(type: .radius, time: Date(),
+                detail: "Anchor watch disabled — stored anchor position was invalid (0,0). Drop the anchor again."), at: 0)
+            let content = UNMutableNotificationContent()
+            content.title             = "⚓ Anchor watch disabled"
+            content.body              = "The stored anchor position was invalid. Drop the anchor again to re-arm the watch."
+            content.sound             = .defaultCritical
+            content.interruptionLevel = .timeSensitive
+            UNUserNotificationCenter.current().add(UNNotificationRequest(
+                identifier: "anchor_invalid_position", content: content, trigger: nil))
+            onWatchStateChanged?()
+            return
+        }
         // Re-arm the geofence + background GPS if we relaunched while anchored.
         if monitoredRegion == nil { startWatch(settings: settings) }
 
@@ -232,10 +343,16 @@ final class AnchorWatchService: NSObject {
         #if os(iOS)
         batteryLevel = Double(UIDevice.current.batteryLevel)
         #else
-        batteryLevel = -1   // no device battery to watch on a Mac nav station
+        batteryLevel = SystemPower.battery()?.level ?? -1   // MacBook; -1 on desktops
         #endif
         if let fix = bestFix(signalK: signalK) {
             updateLiveMetrics(from: fix.coord, settings: settings)
+            // Track fix freshness even while snoozed. Snooze used to skip
+            // this (it lives in evaluatePosition), so a 15-min snooze starved
+            // the GPS-loss debounce and the LOUD siren fired spuriously the
+            // moment the snooze expired — on a desktop Mac (no device GPS)
+            // every single time.
+            lastFixSeenAt = max(lastFixSeenAt, fix.time)
         }
 
         if let snooze = snoozedUntil {
@@ -267,7 +384,7 @@ final class AnchorWatchService: NSObject {
                                 signalK.depth, settings.anchorDepthMin, settings.anchorDepthMax))
         }
 
-        // Low phone battery (iOS only — a desktop has no relevant battery)
+        // Low battery on the watching device — the alarm dies with it.
         #if os(iOS)
         if settings.anchorLowBatteryAlarm, batteryLevel >= 0 {
             let pct = batteryLevel * 100
@@ -276,7 +393,11 @@ final class AnchorWatchService: NSObject {
                  detail: String(format: "Battery %.0f%% — plug in to keep the watch alive", pct))
         } else { activeAlarms.remove(.lowBattery) }
         #else
-        activeAlarms.remove(.lowBattery)
+        if settings.anchorLowBatteryAlarm, let b = SystemPower.battery() {
+            let pct = b.level * 100
+            fire(.lowBattery, active: !b.onAC && pct <= settings.anchorLowBatteryPct,
+                 detail: String(format: "Mac battery %.0f%% — plug in to keep the watch alive", pct))
+        } else { activeAlarms.remove(.lowBattery) }
         #endif
 
         reconcileLoudAlarm(settings: settings)
@@ -313,7 +434,11 @@ final class AnchorWatchService: NSObject {
             fire(.radius, active: confirmed,
                  detail: String(format: "%.0f m from anchor (limit %.0f m) · %@",
                                 distM, settings.anchorRadius, fix.source == "phone" ? "phone GPS" : "boat GPS"))
-        } else {
+        } else if distM < settings.anchorRadius - max(3, settings.anchorRadius * 0.05) {
+            // Hysteresis: stand down only once clearly back inside. A boat
+            // hovering AT the boundary with GPS jitter used to flap the siren
+            // on/off and restart the debounce on every inward blip — hiding
+            // a slow, real drag behind an endless 25 s countdown.
             breachStart = nil
             activeAlarms.remove(.radius)
         }
@@ -341,9 +466,45 @@ final class AnchorWatchService: NSObject {
         activeAlarms = []
         breachStart  = nil
         if loudActive { AlarmSiren.shared.release("anchor-watch"); loudActive = false }
+        onSnooze?(minutes)
     }
 
     func clearLog() { alarmLog = [] }
+
+    // MARK: - System sleep/wake (macOS)
+
+    /// Set when the OS announces sleep during an active watch.
+    private var sleepBegan: Date?
+
+    /// The watch cannot run while the Mac sleeps (the sleep assertion only
+    /// blocks IDLE sleep — a closed lid or an explicit Sleep still wins).
+    /// Say so loudly; the notification lands on the lock screen / at wake.
+    func noteSystemSleep() {
+        guard settingsRef?.anchorActive == true else { return }
+        sleepBegan = Date()
+        alarmLog.insert(AlarmEvent(type: .gpsLoss, time: Date(),
+                                   detail: "Mac went to sleep — anchor watch SUSPENDED until it wakes."), at: 0)
+        let content = UNMutableNotificationContent()
+        content.title             = "⚓ Anchor watch suspended"
+        content.body              = "This Mac is going to sleep — position is NOT being monitored. Wake it and keep the lid open to resume the watch."
+        content.sound             = .defaultCritical
+        content.interruptionLevel = .timeSensitive
+        UNUserNotificationCenter.current().add(UNNotificationRequest(
+            identifier: "anchor_sleep_\(Date().timeIntervalSince1970)",
+            content: content, trigger: nil))
+    }
+
+    func noteSystemWake() {
+        // Fresh GPS-loss grace window: every feed is stale-by-definition at
+        // wake; alarming instantly would blast the siren on every lid-open.
+        lastFixSeenAt = Date()
+        guard let began = sleepBegan else { return }
+        sleepBegan = nil
+        guard settingsRef?.anchorActive == true else { return }
+        let mins = max(1, Int(Date().timeIntervalSince(began) / 60))
+        alarmLog.insert(AlarmEvent(type: .gpsLoss, time: Date(),
+                                   detail: "Watch resumed — Mac was asleep \(mins) min with no position monitoring."), at: 0)
+    }
 
     // MARK: - Position helpers
 
@@ -366,8 +527,16 @@ final class AnchorWatchService: NSObject {
                        time: now, source: "boat")
         }
         if settingsRef?.anchorUseDeviceGPS == false { return boat ?? phone }
+        #if os(macOS)
+        // A Mac's "device fix" is Wi-Fi positioning — routinely ±25–100 m.
+        // Letting it outrank a live boat GPS would wander the vessel across a
+        // 30 m alarm circle and blast false DRAGGING sirens. Boat first; the
+        // device fix is the fallback when the boat network is down.
+        return boat ?? phone
+        #else
         // Prefer phone when fresh; otherwise the boat feed.
         return phone ?? boat
+        #endif
     }
 
     private func updateLiveMetrics(from coord: CLLocationCoordinate2D, settings: AppSettings) {
@@ -459,6 +628,11 @@ final class AnchorWatchService: NSObject {
         // Fresh GPS-loss grace window: arming (or re-arming after relaunch)
         // while the feeds are still coming up must not instantly alarm.
         lastFixSeenAt = Date()
+        // Keep the Mac awake for the duration of the watch (no-op on iOS).
+        // Here rather than dropAnchor: the relaunch-while-anchored re-arm
+        // (checkAlarms → startWatch) must also re-acquire the assertion, or a
+        // Mac that reopened the app mid-watch would idle-sleep and go blind.
+        AppActivity.shared.beginAnchorWatch()
         if let prev = monitoredRegion { locationManager.stopMonitoring(for: prev) }
         let region = CLCircularRegion(
             center: CLLocationCoordinate2D(latitude: settings.anchorLat, longitude: settings.anchorLon),
@@ -497,6 +671,21 @@ final class AnchorWatchService: NSObject {
             content.interruptionLevel = .timeSensitive
             UNUserNotificationCenter.current().add(UNNotificationRequest(
                 identifier: "anchor_mute_warning", content: content, trigger: nil))
+        }
+        // On battery: the sleep assertion only blocks IDLE sleep — a closed
+        // lid still sleeps the Mac, and an unplugged MacBook dies overnight.
+        // Warn at arming time, when it's still cheap to plug in.
+        if let b = SystemPower.battery(), !b.onAC {
+            alarmLog.insert(AlarmEvent(
+                type: .lowBattery, time: Date(),
+                detail: String(format: "Mac on battery (%.0f%%) — plug in and keep the lid open for the watch.", b.level * 100)), at: 0)
+            let content = UNMutableNotificationContent()
+            content.title             = "⚓ Mac is on battery"
+            content.body              = String(format: "%.0f%% left. Plug the Mac in and keep the lid open — the anchor watch stops if it sleeps or dies.", b.level * 100)
+            content.sound             = .default
+            content.interruptionLevel = .timeSensitive
+            UNUserNotificationCenter.current().add(UNNotificationRequest(
+                identifier: "anchor_battery_warning", content: content, trigger: nil))
         }
         #endif
     }
@@ -619,12 +808,28 @@ extension AnchorWatchService: CLLocationManagerDelegate {
             self.deviceFixTime  = time
             self.deviceAccuracy = acc
             guard let settings = self.settingsRef, settings.anchorActive else { return }
-            self.recordPosition(lat: lat, lon: lon)
-            self.updateLiveMetrics(from: coord, settings: settings)
+            #if os(macOS)
+            // With the boat feed live, the Wi-Fi fix is the coarser source —
+            // don't let it jitter the displayed distance/bearing. (The alarm
+            // path is already consistent: evaluatePosition uses bestFix.)
+            let boatIsLive = self.signalKRef?.boatPositionIsLive == true
+            #else
+            let boatIsLive = false
+            #endif
+            // (The 2 s app loop already records the boat track; only record the
+            // device fix when it's actually the source in use, or the coarse
+            // Wi-Fi scatter pollutes the swing breadcrumb.)
+            if !boatIsLive {
+                self.recordPosition(lat: lat, lon: lon)
+                self.updateLiveMetrics(from: coord, settings: settings)
+            }
             // Run the position alarm off the GPS callback so it works in the
-            // background, where the SwiftUI 2 s task is suspended.
+            // background, where the SwiftUI 2 s task is suspended. Respect an
+            // active snooze exactly like the 2 s loop — this path used to
+            // keep firing through it.
             if let sk = self.signalKRef {
-                self.evaluatePosition(signalK: sk, settings: settings)
+                let snoozed = (self.snoozedUntil.map { Date() < $0 }) ?? false
+                if !snoozed { self.evaluatePosition(signalK: sk, settings: settings) }
                 self.reconcileLoudAlarm(settings: settings)
             }
         }

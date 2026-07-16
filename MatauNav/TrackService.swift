@@ -121,15 +121,18 @@ final class TrackService {
     //   GET /tracks            → [{ "id": "...", "name": "...", "points": <count>, "start": <ts>, "end": <ts> }]
     //   GET /tracks/<id>       → [{ "lat":..., "lon":..., "t":..., "sog":..., "cog":... }]
 
-    /// `baseURL` is the SignalK base (e.g. http://matau.local:3000).
-    /// The track recorder listens on a separate port (default 10113) on the
-    /// same host — we derive it here.
-    func fetchPiTracks(baseURL: String) async {
-        guard let comps = URLComponents(string: baseURL), let host = comps.host else { return }
-        let trackBase = "http://\(host):10113"
+    /// `base` is the track server base for the currently-active boat path
+    /// (`signalK.piBase(port: 10113)`); `headers` carries the Cloudflare
+    /// Access token when that path is the public remote bridge.
+    func fetchPiTracks(base trackBase: String, headers: [String: String] = [:]) async {
         guard let listURL = URL(string: "\(trackBase)/tracks") else { return }
+        func request(_ url: URL, timeout: TimeInterval) -> URLRequest {
+            var req = URLRequest(url: url, timeoutInterval: timeout)
+            for (k, v) in headers { req.setValue(v, forHTTPHeaderField: k) }
+            return req
+        }
         do {
-            let (data, resp) = try await URLSession.shared.data(for: URLRequest(url: listURL, timeoutInterval: 8))
+            let (data, resp) = try await URLSession.shared.data(for: request(listURL, timeout: 8))
             guard let http = resp as? HTTPURLResponse, http.statusCode == 200 else {
                 lastError = "Pi /tracks returned \( (resp as? HTTPURLResponse)?.statusCode ?? 0 )"
                 return
@@ -139,7 +142,7 @@ final class TrackService {
             for s in summaries {
                 if tracks.contains(where: { $0.name == "Pi:\(s.id)" }) { continue }
                 guard let detailURL = URL(string: "\(trackBase)/tracks/\(s.id)"),
-                      let (pdata, _) = try? await URLSession.shared.data(for: URLRequest(url: detailURL, timeoutInterval: 15)),
+                      let (pdata, _) = try? await URLSession.shared.data(for: request(detailURL, timeout: 15)),
                       let points = try? JSONDecoder().decode([TrackPoint].self, from: pdata) else { continue }
                 guard points.count > 1 else { continue }
                 let t = Track(name: "Pi:\(s.name ?? s.id)", source: .pi, points: points)

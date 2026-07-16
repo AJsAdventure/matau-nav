@@ -442,7 +442,12 @@ struct AutopilotView: View {
 
     private var piStatusLabel: String {
         switch piService.connectionState {
-        case .connected:    piService.onTailscale ? "Pi · Tailscale" : "Pi · Connected"
+        case .connected:
+            switch piService.activeKind {
+            case .local:     "Pi · Connected"
+            case .tailscale: "Pi · Tailscale"
+            case .remote:    "Pi · Remote"
+            }
         case .disconnected: "Pi · Unreachable — check Setup"
         case .unknown:      settings.effectiveAnchorPiURL.isEmpty ? "Pi · Not configured — go to Setup" : "Pi · Connecting…"
         }
